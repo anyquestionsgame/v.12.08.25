@@ -31,7 +31,7 @@ interface PlayerScore {
   score: number;
 }
 
-type GamePhase = 'transition' | 'intro' | 'scenario' | 'predicting' | 'subject' | 'results' | 'final';
+type GamePhase = 'transition' | 'handoff' | 'intro' | 'scenario' | 'predicting' | 'subject' | 'results' | 'final';
 
 export default function ComeThru() {
   const router = useRouter();
@@ -185,12 +185,16 @@ export default function ComeThru() {
       setUsedScenarios(prev => [...prev, rawScenario]);
       
       // Reset state
-      setPhase('transition');
+      setPhase('handoff');
       setPredictions({});
       setCurrentPredictorIndex(0);
       setSubjectChoice(null);
       setRoundResults(null);
     }
+  };
+
+  const startHandoff = () => {
+    setPhase('intro');
   };
 
   const handleGameComplete = () => {
@@ -271,10 +275,39 @@ export default function ComeThru() {
     );
   }
 
+  // HANDOFF SCREEN (between rounds)
+  if (phase === 'handoff') {
+    const nextSubject = currentCard?.subject;
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <div className="text-center animate-fadeInScale">
+          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
+            {nextSubject?.toUpperCase()} IS UP NEXT
+          </h1>
+          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
+            Pass the phone now
+          </p>
+          <button
+            onClick={startHandoff}
+            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
+          >
+            READY
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   // SCREEN 1 - Round Intro
   if (phase === 'intro') {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#E07A5F] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.subject.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar with scores */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -326,7 +359,14 @@ export default function ComeThru() {
   // SCREEN 2 - Scenario Display
   if (phase === 'scenario') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#E07A5F] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.subject.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
         <p className="font-body text-[13px] text-[#D4A574] uppercase tracking-wider">
           The Scenario
         </p>
@@ -347,6 +387,7 @@ export default function ComeThru() {
         >
           READY TO PREDICT
         </button>
+        </div>
       </main>
     );
   }
@@ -367,7 +408,14 @@ export default function ComeThru() {
       const nextPredictor = predictors[currentPredictorIndex + 1];
       
       return (
-        <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-[#E07A5F] text-center">
+            <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+              {currentPredictor.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
           <p className="font-body text-[14px] text-[#4A7C59] uppercase tracking-wider">
             Got it!
           </p>
@@ -396,12 +444,19 @@ export default function ComeThru() {
           >
             NEXT
           </button>
+          </div>
         </main>
       );
     }
     
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#E07A5F] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentPredictor.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -449,6 +504,12 @@ export default function ComeThru() {
     
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#E07A5F] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.subject.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-center border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#D4A574] uppercase tracking-wider">
@@ -513,6 +574,12 @@ export default function ComeThru() {
   if (phase === 'results' && roundResults && subjectChoice) {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#E07A5F] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.subject.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">

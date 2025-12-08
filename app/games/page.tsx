@@ -44,6 +44,7 @@ const games: Game[] = [
     oneLiner: "By round three, you're learning things you can't unlearn",
     exampleTemplate: "Who's most likely to start a cult by accident?",
     accentColor: '#6BA5A5', // Soft teal
+    minPlayers: 4,
   },
   {
     id: 'come-thru',

@@ -33,7 +33,7 @@ interface Answer {
   text: string;
 }
 
-type GamePhase = 'transition' | 'intro' | 'collecting' | 'picking' | 'reveal' | 'final';
+type GamePhase = 'transition' | 'handoff' | 'intro' | 'collecting' | 'picking' | 'reveal' | 'final';
 
 export default function Play() {
   const router = useRouter();
@@ -236,11 +236,15 @@ export default function Play() {
       // Next round
       setCurrentRound(prev => prev + 1);
       setSubjectIndex(nextSubjectIndex);
-      setPhase('transition');
+      setPhase('handoff');
       setSelectedAnswerIndex(null);
       setWinningAnswer(null);
       setCurrentPrompt(getNextPrompt(players[nextSubjectIndex]));
     }
+  };
+
+  const startHandoff = () => {
+    setPhase('intro');
   };
 
   const handleGameComplete = () => {
@@ -329,10 +333,39 @@ export default function Play() {
     );
   }
 
+  // HANDOFF SCREEN (between rounds)
+  if (phase === 'handoff') {
+    const nextSubject = players[subjectIndex];
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <div className="text-center animate-fadeInScale">
+          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
+            {nextSubject?.name.toUpperCase()} IS UP NEXT
+          </h1>
+          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
+            Pass the phone now
+          </p>
+          <button
+            onClick={startHandoff}
+            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
+          >
+            READY
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   // SCREEN 1 - Round Intro
   if (phase === 'intro') {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col animate-fadeIn">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#D4A574] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {subject.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar with scores */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -385,6 +418,12 @@ export default function Play() {
     
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col animate-fadeIn">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#D4A574] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {subject.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar with timer */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -445,6 +484,12 @@ export default function Play() {
   if (phase === 'picking') {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col animate-fadeIn">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#D4A574] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {subject.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -515,6 +560,12 @@ export default function Play() {
   if (phase === 'reveal' && winningAnswer) {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col animate-fadeIn">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#D4A574] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {subject.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">

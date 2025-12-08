@@ -29,7 +29,7 @@ interface PlayerScore {
   score: number;
 }
 
-type GamePhase = 'transition' | 'selection' | 'question' | 'answer' | 'steal' | 'score' | 'final';
+type GamePhase = 'transition' | 'handoff' | 'selection' | 'question' | 'answer' | 'steal' | 'score' | 'final';
 type Difficulty = 'easy' | 'hard';
 
 export default function Trivia() {
@@ -215,7 +215,7 @@ export default function Trivia() {
       setCurrentCard(card);
       
       // Reset state
-      setPhase('transition');
+      setPhase('handoff');
       setSelectedDifficulty(null);
       setUserAnswer('');
       setIsCorrect(null);
@@ -224,6 +224,10 @@ export default function Trivia() {
       setStealCorrect(null);
       setPointsAwarded([]);
     }
+  };
+
+  const startHandoff = () => {
+    setPhase('selection');
   };
 
   const handleGameComplete = () => {
@@ -308,10 +312,39 @@ export default function Trivia() {
     );
   }
 
+  // HANDOFF SCREEN (between rounds)
+  if (phase === 'handoff') {
+    const nextAnswerer = currentCard?.answerer;
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <div className="text-center animate-fadeInScale">
+          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
+            {nextAnswerer?.toUpperCase()} IS UP NEXT
+          </h1>
+          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
+            Pass the phone now
+          </p>
+          <button
+            onClick={startHandoff}
+            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
+          >
+            READY
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   // SCREEN 1 - Question Selection
   if (phase === 'selection') {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#9A8BC4] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.answerer.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar with scores */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -392,6 +425,12 @@ export default function Trivia() {
     
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#9A8BC4] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.answerer.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar with timer */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
@@ -437,7 +476,14 @@ export default function Trivia() {
   // SCREEN 3a - Answer Verification
   if (phase === 'answer') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#9A8BC4] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.answerer.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
         <p className="font-body text-[14px] text-[#9B9388] uppercase tracking-wider">
           {currentCard.answerer} answered:
         </p>
@@ -473,6 +519,7 @@ export default function Trivia() {
             ✗ WRONG
           </button>
         </div>
+        </div>
       </main>
     );
   }
@@ -482,7 +529,14 @@ export default function Trivia() {
     // Expert Steal
     if (currentCard.stealType === 'expert' && !stealAttempt) {
       return (
-        <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-[#9A8BC4] text-center">
+            <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+              {currentCard.expert?.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
           <p className="font-body text-[14px] text-[#C45B4D] uppercase tracking-wider">
             Wrong Answer!
           </p>
@@ -505,6 +559,7 @@ export default function Trivia() {
             >
               PASS
             </button>
+          </div>
           </div>
         </main>
       );
@@ -548,6 +603,7 @@ export default function Trivia() {
           >
             No one wants to steal
           </button>
+          </div>
         </main>
       );
     }
@@ -555,7 +611,14 @@ export default function Trivia() {
     // Steal attempt in progress
     if (stealAttempt && stealCorrect === null) {
       return (
-        <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
+        <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-[#9A8BC4] text-center">
+            <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+              {stealAttempt.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
           <p className="font-body text-[14px] text-[#D4A574] uppercase tracking-wider">
             Steal Attempt
           </p>
@@ -589,8 +652,9 @@ export default function Trivia() {
               onClick={() => markSteal(false)}
               className="px-10 py-5 bg-[#C45B4D] text-[#F0EEE9] rounded-xl font-heading text-[18px] font-bold transition-all duration-150 ease-out cursor-pointer hover:opacity-90 active:scale-[0.96]"
             >
-              ✗ WRONG
-            </button>
+            ✗ WRONG
+          </button>
+          </div>
           </div>
         </main>
       );
@@ -601,6 +665,12 @@ export default function Trivia() {
   if (phase === 'score') {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
+        {/* Whose turn banner */}
+        <div className="w-full py-3 bg-[#9A8BC4] text-center">
+          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
+            {currentCard.answerer.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+          </p>
+        </div>
         {/* Top bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
           <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
