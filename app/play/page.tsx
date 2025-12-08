@@ -387,12 +387,6 @@ export default function Play() {
             That&apos;s So You
           </p>
           
-          <h1 className="mt-4 font-heading text-[32px] font-bold text-[#F0EEE9] text-center">
-            {subject.name.toUpperCase()}, YOU&apos;RE ABOUT TO GET ROASTED
-          </h1>
-          
-          <div className="mt-8 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
-          
           <p className="mt-8 font-heading text-[28px] font-normal text-[#F0EEE9] text-center leading-relaxed">
             &ldquo;{currentPrompt}&rdquo;
           </p>

@@ -332,12 +332,6 @@ export default function MostLikelyTo() {
             Most Likely To
           </p>
           
-          <h1 className="mt-4 font-heading text-[32px] font-bold text-[#F0EEE9] text-center">
-            WHO&apos;S GETTING VOTED OFF THE ISLAND?
-          </h1>
-          
-          <div className="mt-8 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
-          
           <div className="mt-8 p-6 bg-[#2D2B28] rounded-xl max-w-[360px]">
             <p className="font-heading text-[24px] font-normal text-[#F0EEE9] text-center leading-relaxed">
               &ldquo;{currentPrompt}&rdquo;
