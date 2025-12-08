@@ -1,8 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface PlayerData {
@@ -12,6 +10,18 @@ interface PlayerData {
 }
 
 export default function Onboarding() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
+        <p className="text-[#9B9388]">Loading...</p>
+      </main>
+    }>
+      <OnboardingContent />
+    </Suspense>
+  );
+}
+
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
