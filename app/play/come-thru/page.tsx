@@ -7,7 +7,8 @@ import {
   calculateComeThruResults,
   COME_THRU_SCORING,
   ComeThruCard,
-  SavageryLevel
+  SavageryLevel,
+  extractScenarioFromPrompt
 } from '@/app/lib/comeThruEngine';
 import { 
   loadSession, 
@@ -93,7 +94,9 @@ export default function ComeThru() {
         }));
         const card = generateComeThruCard(triviaPlayers, 1, currentSavagery, []);
         setCurrentCard(card);
-        setUsedScenarios([card.scenario]);
+        // Extract raw scenario for deduplication (engine compares raw scenarios, not formatted)
+        const rawScenario = extractScenarioFromPrompt(card.scenario);
+        setUsedScenarios([rawScenario]);
       } else {
         console.error('No players found - redirecting to setup');
         router.push('/setup');
@@ -177,7 +180,9 @@ export default function ComeThru() {
       }));
       const card = generateComeThruCard(triviaPlayers, nextRoundNum, savageryLevel, usedScenarios);
       setCurrentCard(card);
-      setUsedScenarios(prev => [...prev, card.scenario]);
+      // Extract raw scenario for deduplication (engine compares raw scenarios, not formatted)
+      const rawScenario = extractScenarioFromPrompt(card.scenario);
+      setUsedScenarios(prev => [...prev, rawScenario]);
       
       // Reset state
       setPhase('transition');

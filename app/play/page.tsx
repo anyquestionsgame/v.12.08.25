@@ -98,12 +98,13 @@ export default function Play() {
         setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
         
         // Generate first prompt using essence engine
+        // Collect ALL players' "rather die than" preferences for filtering
+        const allRatherDieThan = formattedPlayers.map(p => p.ratherDie).filter(Boolean);
         const firstPlayer = formattedPlayers[0];
-        const ratherDieFilters = firstPlayer.ratherDie ? [firstPlayer.ratherDie] : [];
         const { prompt, category } = generateEssencePrompt(
           firstPlayer.name,
           currentSavagery,
-          ratherDieFilters,
+          allRatherDieThan,
           []
         );
         setCurrentPrompt(prompt);
@@ -152,16 +153,17 @@ export default function Play() {
   }, [players, subjectIndex]);
 
   const getNextPrompt = useCallback((subjectPlayer: PlayerData) => {
-    const ratherDieFilters = subjectPlayer.ratherDie ? [subjectPlayer.ratherDie] : [];
+    // Collect ALL players' "rather die than" preferences for filtering
+    const allRatherDieThan = players.map(p => p.ratherDie).filter(Boolean);
     const { prompt, category } = generateEssencePrompt(
       subjectPlayer.name,
       savageryLevel,
-      ratherDieFilters,
+      allRatherDieThan,
       usedPromptCategories
     );
     setUsedPromptCategories(prev => [...prev, category]);
     return prompt;
-  }, [savageryLevel, usedPromptCategories]);
+  }, [players, savageryLevel, usedPromptCategories]);
 
   const startAnswerCollection = () => {
     setPhase('collecting');

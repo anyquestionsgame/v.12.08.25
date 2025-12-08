@@ -108,8 +108,9 @@ export function generateComeThruScenario(
   // Filter by content
   pool = filterComeThruScenarios(pool, savageryLevel, allRatherDieThan);
   
-  // Remove used
-  pool = pool.filter(p => !usedScenarios.includes(p.scenario));
+  // Remove used (case-insensitive comparison to handle formatted vs raw scenarios)
+  const usedScenariosLower = usedScenarios.map(s => s.toLowerCase());
+  pool = pool.filter(p => !usedScenariosLower.includes(p.scenario.toLowerCase()));
   
   // Reset if empty
   if (pool.length === 0) {
