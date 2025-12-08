@@ -330,5 +330,5 @@ export function validateAnswer(
 }
 
 // Export for testing/debugging
-export { TriviaQuestion };
+export type { TriviaQuestion };
 
