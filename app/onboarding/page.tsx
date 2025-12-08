@@ -29,10 +29,18 @@ export default function Onboarding() {
   const [savageryLevel, setSavageryLevel] = useState<'gentle' | 'standard' | 'brutal'>('standard');
   const [location, setLocation] = useState('');
   const [locationError, setLocationError] = useState('');
+  
+  // Mounted state to prevent SSR issues
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Get player count from URL params or localStorage
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!mounted) return;
     
     const urlPlayers = searchParams.get('players');
     if (urlPlayers) {
@@ -43,7 +51,7 @@ export default function Onboarding() {
         setPlayerCount(parseInt(storedPlayers, 10));
       }
     }
-  }, [searchParams]);
+  }, [searchParams, mounted]);
 
   // Timer countdown
   useEffect(() => {
@@ -160,6 +168,15 @@ export default function Onboarding() {
       setTimerExpired(false);
     }
   }, [name, goodAt, ratherDie, players, currentPlayer, playerCount, router]);
+
+  // Prevent SSR issues - don't render until mounted
+  if (!mounted) {
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
+        <p className="text-[#9B9388]">Loading...</p>
+      </main>
+    );
+  }
 
   // Intro Screen
   if (step === 'intro') {
