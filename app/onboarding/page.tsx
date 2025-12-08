@@ -32,6 +32,8 @@ export default function Onboarding() {
 
   // Get player count from URL params or localStorage
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const urlPlayers = searchParams.get('players');
     if (urlPlayers) {
       setPlayerCount(parseInt(urlPlayers, 10));
@@ -73,7 +75,9 @@ export default function Onboarding() {
   };
 
   const handleSavageryContinue = () => {
-    localStorage.setItem('qtc_savagery', savageryLevel);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qtc_savagery', savageryLevel);
+    }
     setStep('location');
   };
 
@@ -109,12 +113,16 @@ export default function Onboarding() {
 
   const handleLocationContinue = () => {
     const locationValue = location.trim() || undefined;
-    localStorage.setItem('qtc_location', locationValue || '');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qtc_location', locationValue || '');
+    }
     router.push('/games');
   };
 
   const handleLocationSkip = () => {
-    localStorage.setItem('qtc_location', '');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qtc_location', '');
+    }
     router.push('/games');
   };
 
@@ -131,14 +139,16 @@ export default function Onboarding() {
 
     if (currentPlayer >= playerCount) {
       // Last player - save to localStorage and move to savagery selection
-      localStorage.setItem('players', JSON.stringify(updatedPlayers));
-      // Also save with orchestrator key format
-      const orchestratorPlayers = updatedPlayers.map(p => ({
-        name: p.name,
-        expertise: p.goodAt,
-        ratherDieThan: p.ratherDie
-      }));
-      localStorage.setItem('qtc_players', JSON.stringify(orchestratorPlayers));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('players', JSON.stringify(updatedPlayers));
+        // Also save with orchestrator key format
+        const orchestratorPlayers = updatedPlayers.map(p => ({
+          name: p.name,
+          expertise: p.goodAt,
+          ratherDieThan: p.ratherDie
+        }));
+        localStorage.setItem('qtc_players', JSON.stringify(orchestratorPlayers));
+      }
       setStep('savagery');
     } else {
       // Next player
