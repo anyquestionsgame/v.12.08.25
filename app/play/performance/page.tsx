@@ -273,7 +273,7 @@ export default function Performance() {
   useEffect(() => {
     if (phase === 'transition') {
       const timer = setTimeout(() => {
-        setPhase('transition');
+        setPhase('announce');
       }, 1500);
       return () => clearTimeout(timer);
     }

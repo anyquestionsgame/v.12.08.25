@@ -30,7 +30,7 @@ interface PlayerScore {
   score: number;
 }
 
-type GamePhase = 'intro' | 'scenario' | 'predicting' | 'subject' | 'results' | 'final';
+type GamePhase = 'transition' | 'intro' | 'scenario' | 'predicting' | 'subject' | 'results' | 'final';
 
 export default function ComeThru() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function ComeThru() {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [currentRound, setCurrentRound] = useState(1);
-  const [phase, setPhase] = useState<GamePhase>('intro');
+  const [phase, setPhase] = useState<GamePhase>('transition');
   const [savageryLevel, setSavageryLevel] = useState<SavageryLevel>('standard');
   
   // Round state
@@ -180,7 +180,7 @@ export default function ComeThru() {
       setUsedScenarios(prev => [...prev, card.scenario]);
       
       // Reset state
-      setPhase('intro');
+      setPhase('transition');
       setPredictions({});
       setCurrentPredictorIndex(0);
       setSubjectChoice(null);
@@ -232,10 +232,36 @@ export default function ComeThru() {
     router.push('/games');
   };
 
+  // Auto-advance from transition to intro
+  useEffect(() => {
+    if (phase === 'transition') {
+      const timer = setTimeout(() => {
+        setPhase('intro');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
+
   if (players.length === 0 || !currentCard) {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
         <p className="font-body text-[16px] text-[#9B9388]">Loading...</p>
+      </main>
+    );
+  }
+
+  // TRANSITION SCREEN
+  if (phase === 'transition') {
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
+        <div className="text-center animate-fadeInScale">
+          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
+            PHONE A FRIEND
+          </h1>
+          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
+            Who do you trust in a crisis?
+          </p>
+        </div>
       </main>
     );
   }

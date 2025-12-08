@@ -29,7 +29,7 @@ interface PlayerScore {
   score: number;
 }
 
-type GamePhase = 'selection' | 'question' | 'answer' | 'steal' | 'score' | 'final';
+type GamePhase = 'transition' | 'selection' | 'question' | 'answer' | 'steal' | 'score' | 'final';
 type Difficulty = 'easy' | 'hard';
 
 export default function Trivia() {
@@ -39,7 +39,7 @@ export default function Trivia() {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [currentTurn, setCurrentTurn] = useState(1);
-  const [phase, setPhase] = useState<GamePhase>('selection');
+  const [phase, setPhase] = useState<GamePhase>('transition');
   
   // Round state
   const [currentCard, setCurrentCard] = useState<TriviaCard | null>(null);
@@ -215,7 +215,7 @@ export default function Trivia() {
       setCurrentCard(card);
       
       // Reset state
-      setPhase('selection');
+      setPhase('transition');
       setSelectedDifficulty(null);
       setUserAnswer('');
       setIsCorrect(null);
@@ -274,10 +274,36 @@ export default function Trivia() {
     return `0:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // Auto-advance from transition to selection
+  useEffect(() => {
+    if (phase === 'transition') {
+      const timer = setTimeout(() => {
+        setPhase('selection');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
+
   if (players.length === 0 || !currentCard) {
     return (
       <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
         <p className="font-body text-[16px] text-[#9B9388]">Loading...</p>
+      </main>
+    );
+  }
+
+  // TRANSITION SCREEN
+  if (phase === 'transition') {
+    return (
+      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
+        <div className="text-center animate-fadeInScale">
+          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
+            TRIVIA TIME
+          </h1>
+          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
+            Show us what you know
+          </p>
+        </div>
       </main>
     );
   }

@@ -242,7 +242,7 @@ export default function MostLikelyTo() {
   useEffect(() => {
     if (phase === 'transition') {
       const timer = setTimeout(() => {
-        setPhase('transition');
+        setPhase('intro');
       }, 1500);
       return () => clearTimeout(timer);
     }
