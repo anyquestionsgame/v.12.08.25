@@ -135,6 +135,13 @@ export default function Home() {
     );
   }
 
+  // BLANK SCREEN DURING REDIRECT
+  if (introPhase === 'redirect') {
+    return (
+      <main className="min-h-screen bg-[#1F1E1C]" />
+    );
+  }
+
   // MAIN SCREEN (shown if intro was already shown or skipped)
   return (
     <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center relative animate-fadeIn">
