@@ -655,6 +655,7 @@ export default function Performance() {
         >
           {currentRound >= players.length ? 'SEE FINAL SCORES' : 'NEXT ROUND'}
         </button>
+        </div>
       </main>
     );
   }

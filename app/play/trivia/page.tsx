@@ -603,7 +603,6 @@ export default function Trivia() {
           >
             No one wants to steal
           </button>
-          </div>
         </main>
       );
     }
