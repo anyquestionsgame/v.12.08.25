@@ -17,8 +17,10 @@ import {
   saveSession, 
   isSessionComplete, 
   GAME_ROUTES,
-  getCurrentGame
+  getCurrentGame,
+  GameSession
 } from '@/app/lib/gameOrchestrator';
+import SessionGuard from '@/components/SessionGuard';
 
 interface PlayerData {
   name: string;
@@ -33,7 +35,7 @@ interface PlayerScore {
 
 type GamePhase = 'transition' | 'handoff' | 'intro' | 'scenario' | 'predicting' | 'subject' | 'results' | 'final';
 
-export default function ComeThru() {
+function ComeThruContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
   
   // Game state
@@ -54,58 +56,43 @@ export default function ComeThru() {
     points: Record<string, number>;
   } | null>(null);
 
-  // Load player data and session
+  // Load player data from session
   useEffect(() => {
     try {
-      const session = loadSession();
-      if (!session) {
-        console.error('No session found - redirecting to games');
-        router.push('/games');
+      const currentSavagery = initialSession.savageryLevel || 'standard';
+      setSavageryLevel(currentSavagery);
+      
+      // Convert session players to PlayerData format
+      const formattedPlayers: PlayerData[] = initialSession.players.map(p => ({
+        name: p.name || 'Unknown',
+        goodAt: p.expertise || 'General Knowledge',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      if (formattedPlayers.length === 0) {
+        console.error('No valid players found');
+        router.push('/setup');
         return;
       }
       
-      const currentSavagery = session.savageryLevel || 'standard';
-      setSavageryLevel(currentSavagery);
+      setPlayers(formattedPlayers);
+      setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
       
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        const playerData: PlayerData[] = JSON.parse(storedPlayers);
-        
-        // Handle both data formats
-        const formattedPlayers = playerData.map((p: any) => ({
-          name: p.name || 'Unknown',
-          goodAt: p.goodAt || p.expertise || 'General Knowledge',
-          ratherDie: p.ratherDie || p.ratherDieThan || ''
-        }));
-        
-        if (formattedPlayers.length === 0) {
-          console.error('No valid players found');
-          router.push('/setup');
-          return;
-        }
-        
-        setPlayers(formattedPlayers);
-        setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
-        
-        // Generate first card
-        const triviaPlayers = formattedPlayers.map(p => ({
-          name: p.name,
-          ratherDieThan: p.ratherDie
-        }));
-        const card = generateComeThruCard(triviaPlayers, 1, currentSavagery, []);
-        setCurrentCard(card);
-        // Extract raw scenario for deduplication (engine compares raw scenarios, not formatted)
-        const rawScenario = extractScenarioFromPrompt(card.scenario);
-        setUsedScenarios([rawScenario]);
-      } else {
-        console.error('No players found - redirecting to setup');
-        router.push('/setup');
-      }
+      // Generate first card
+      const triviaPlayers = formattedPlayers.map(p => ({
+        name: p.name,
+        ratherDieThan: p.ratherDie
+      }));
+      const card = generateComeThruCard(triviaPlayers, 1, currentSavagery, []);
+      setCurrentCard(card);
+      // Extract raw scenario for deduplication (engine compares raw scenarios, not formatted)
+      const rawScenario = extractScenarioFromPrompt(card.scenario);
+      setUsedScenarios([rawScenario]);
     } catch (error) {
       console.error('Error loading game data:', error);
       router.push('/setup');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   const startRound = () => {
     setPhase('scenario');
@@ -739,5 +726,13 @@ export default function ComeThru() {
   }
 
   return null;
+}
+
+export default function ComeThru() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <ComeThruContent session={session} />}
+    </SessionGuard>
+  );
 }
 

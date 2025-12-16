@@ -7,12 +7,14 @@ import {
   saveSession,
   GAME_ID_MAP,
   GAME_ROUTES,
-  GameType
+  GameType,
+  Player
 } from '@/app/lib/gameOrchestrator';
 import Loading from '@/components/Loading';
 import EmptyState from '@/components/EmptyState';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
+import PlayersGuard from '@/components/PlayersGuard';
 
 interface PlayerData {
   name: string;
@@ -70,7 +72,7 @@ const games: Game[] = [
   },
 ];
 
-export default function Games() {
+function GamesContent({ players: guardPlayers }: { players: Player[] }) {
   const router = useRouter();
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [selectedGames, setSelectedGames] = useState<Set<string>>(new Set());
@@ -83,31 +85,19 @@ export default function Games() {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 300)); // Minimum 300ms loading
       
-      // Try to load players from either key
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        try {
-          const playerData = JSON.parse(storedPlayers);
-          // Handle both formats (with goodAt/expertise)
-          const formattedPlayers = playerData.map((p: any) => ({
-            name: p.name,
-            goodAt: p.goodAt || p.expertise || '',
-            ratherDie: p.ratherDie || p.ratherDieThan || ''
-          }));
-          setPlayers(formattedPlayers);
-        } catch (error) {
-          console.error('Error parsing player data:', error);
-          router.push('/setup');
-        }
-      } else {
-        // No players found, redirect to setup
-        router.push('/setup');
-      }
+      // Convert guard players to PlayerData format
+      const formattedPlayers: PlayerData[] = guardPlayers.map(p => ({
+        name: p.name,
+        goodAt: p.expertise || '',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      setPlayers(formattedPlayers);
       setIsLoading(false);
     };
     
     loadData();
-  }, [router]);
+  }, [guardPlayers]);
 
   const toggleGame = (gameId: string) => {
     const game = games.find(g => g.id === gameId);
@@ -216,18 +206,6 @@ export default function Games() {
 
   if (isLoading) {
     return <Loading />;
-  }
-
-  if (players.length === 0) {
-    return (
-      <EmptyState
-        icon="👥"
-        title="No Players Found"
-        message="Need at least 3 players to start a game"
-        actionLabel="Go to Setup"
-        onAction={() => router.push('/setup')}
-      />
-    );
   }
 
   const canContinue = selectedGames.size >= 1;
@@ -372,5 +350,13 @@ export default function Games() {
         />
       ))}
     </main>
+  );
+}
+
+export default function Games() {
+  return (
+    <PlayersGuard redirectOnInvalid={true}>
+      {(players) => <GamesContent players={players} />}
+    </PlayersGuard>
   );
 }
