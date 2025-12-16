@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  loadSession,
   clearSession,
   getScoreboard,
   getWinners,
@@ -15,10 +14,10 @@ import {
 import AnimatedScore from '@/components/AnimatedScore';
 import Loading from '@/components/Loading';
 import Confetti from '@/components/Confetti';
+import SessionGuard from '@/components/SessionGuard';
 
-export default function FinalScores() {
+function FinalScoresContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
-  const [session, setSession] = useState<GameSession | null>(null);
   const [scoreboard, setScoreboard] = useState<Player[]>([]);
   const [winners, setWinners] = useState<Player[]>([]);
   const [showGameBreakdown, setShowGameBreakdown] = useState(false);
@@ -27,38 +26,31 @@ export default function FinalScores() {
 
   useEffect(() => {
     try {
-      const loadedSession = loadSession();
       const testingMode = localStorage.getItem('qtc_testing_mode') === 'true';
       setIsTestingMode(testingMode);
       
-      if (loadedSession) {
-        setSession(loadedSession);
-        const scoreboardData = getScoreboard(loadedSession);
-        const winnersData = getWinners(loadedSession);
-        
-        if (scoreboardData.length === 0) {
-          console.error('No scoreboard data - redirecting to home');
-          router.push('/');
-          return;
-        }
-        
-        setScoreboard(scoreboardData);
-        setWinners(winnersData);
-        // Show confetti for winners
-        if (winnersData.length > 0) {
-          setShowConfetti(true);
-          // Hide confetti after 3 seconds
-          setTimeout(() => setShowConfetti(false), 3000);
-        }
-      } else {
-        console.error('No session found - redirecting to home');
+      const scoreboardData = getScoreboard(initialSession);
+      const winnersData = getWinners(initialSession);
+      
+      if (scoreboardData.length === 0) {
+        console.error('No scoreboard data - redirecting to home');
         router.push('/');
+        return;
+      }
+      
+      setScoreboard(scoreboardData);
+      setWinners(winnersData);
+      // Show confetti for winners
+      if (winnersData.length > 0) {
+        setShowConfetti(true);
+        // Hide confetti after 3 seconds
+        setTimeout(() => setShowConfetti(false), 3000);
       }
     } catch (error) {
       console.error('Error loading final scores:', error);
       router.push('/');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   const handlePlayAgain = () => {
     try {
@@ -86,13 +78,9 @@ export default function FinalScores() {
   };
 
   const getGameScoreForPlayer = (gameType: GameType, playerName: string): number => {
-    if (!session?.gameScores[gameType]) return 0;
-    return session.gameScores[gameType][playerName] || 0;
+    if (!initialSession?.gameScores[gameType]) return 0;
+    return initialSession.gameScores[gameType][playerName] || 0;
   };
-
-  if (!session) {
-    return <Loading />;
-  }
 
   const isTie = winners.length > 1;
 
@@ -102,7 +90,7 @@ export default function FinalScores() {
       {/* Celebration header */}
       <div className="text-center animate-slideUp">
         <p className="font-body text-[14px] text-[#D4A574] uppercase tracking-wider">
-          {session.selectedGames.length} {session.selectedGames.length === 1 ? 'Game' : 'Games'} Complete
+          {initialSession.selectedGames.length} {initialSession.selectedGames.length === 1 ? 'Game' : 'Games'} Complete
         </p>
         
         <h1 className="mt-4 font-heading text-[48px] font-bold text-[#F0EEE9]">
@@ -178,7 +166,7 @@ export default function FinalScores() {
         
         {showGameBreakdown && (
           <div className="mt-4 space-y-6">
-            {session.selectedGames.map((gameType) => (
+            {initialSession.selectedGames.map((gameType) => (
               <div key={gameType} className="bg-[#2D2B28] rounded-lg p-4">
                 <p className="font-body text-[12px] text-[#D4A574] uppercase tracking-wider mb-3">
                   {GAME_NAMES[gameType]}
@@ -218,6 +206,14 @@ export default function FinalScores() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function FinalScores() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <FinalScoresContent session={session} />}
+    </SessionGuard>
   );
 }
 
