@@ -164,7 +164,8 @@ async function handleBulkGeneration(body: any) {
 // Fallback questions if AI fails
 function getFallbackQuestions(category: string, playerName: string): TriviaQuestion[] {
   return [100, 200, 300, 400].map(difficulty => ({
-    category,
+    originalCategory: category,
+    displayCategory: category, // Use same name for fallback
     difficulty: difficulty as 100 | 200 | 300 | 400,
     questionText: `Here's a ${difficulty}-point question about ${category}. What's something interesting about this topic?`,
     rangeText: `We'll be generous with this one, ${playerName}.`,
