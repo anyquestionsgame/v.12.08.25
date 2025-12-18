@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateQuestions, TriviaQuestion } from '@/app/lib/aiQuestionEngine';
 
+// Route segment config - prevent build-time analysis
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // ═══════════════════════════════════════════════════════════
 // POST /api/questions/generate
 // ═══════════════════════════════════════════════════════════
