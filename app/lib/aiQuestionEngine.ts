@@ -158,28 +158,39 @@ NEVER GENERATE THESE (WILL BE REJECTED):
 ❌ "Describe something about X"
 ❌ "What do you associate with X?"
 ❌ "What's something interesting about X?"
+❌ "What's a fact about X that experts know?" ← THIS IS A META-QUESTION
+❌ "Name something an expert would know about X" ← THIS IS A META-QUESTION
+❌ "What would someone who knows X tell you?" ← THIS IS A META-QUESTION
 ❌ Answers like "any reasonable answer" or "varies" or "depends" or "group decides"
 
-ALWAYS GENERATE THESE:
+CRITICAL - NO META-QUESTIONS:
+A meta-question asks the player to GENERATE a fact.
+A real trivia question tests if the player KNOWS a specific fact.
+
+META-QUESTION (WRONG): "What's a fact about trucks that requires expertise?"
+REAL TRIVIA (CORRECT): "What year did Ford introduce the F-150?"
+
+ALWAYS GENERATE DIRECT TRIVIA QUESTIONS:
 ✅ "What year did X happen?" → "1985"
 ✅ "Who invented X?" → "Thomas Edison"
 ✅ "What company makes X?" → "Ford"
 ✅ "How many X are there?" → "47"
 ✅ "What is the name of X?" → "Specific Name"
+✅ "What temperature is needed for X?" → "1200°C"
 ✅ Answers that are OBJECTIVELY CORRECT OR INCORRECT
 
 EXAMPLE - CATEGORY: "Trucks"
-BAD: "What comes to mind when someone mentions trucks?" 
-     Answer: "any reasonable answer" ← NEVER DO THIS
+BAD (meta-question): "What's something an expert would know about trucks?" 
+     ← This asks player to generate facts, not answer trivia
 
-GOOD: "What's the best-selling truck in America for 40+ years?"
-      Answer: "Ford F-150" ← SPECIFIC, VERIFIABLE FACT
+GOOD (direct trivia): "What's the best-selling truck in America?"
+     Answer: "Ford F-150" ← Tests if player knows THIS specific fact
 
-BAD: "What do you think makes a good truck?"
-     Answer: "varies by person" ← NEVER DO THIS
+BAD (meta-question): "Name a technical spec about the F-150"
+     ← Player has to come up with a fact
 
-GOOD: "What year did Ford switch the F-150 to an aluminum body?"
-      Answer: "2015" ← SPECIFIC, VERIFIABLE FACT
+GOOD (direct trivia): "What year did Ford switch the F-150 to an aluminum body?"
+      Answer: "2015" ← Tests if player knows THIS specific fact
 
 ═══════════════════════════════════════════════════════════
 QUESTION FORMAT
@@ -396,59 +407,61 @@ Generate FACTUAL questions with SPECIFIC answers. RESPECT THE DIFFICULTY CURVE!`
 }
 
 // ═══════════════════════════════════════════════════════════
-// FALLBACK: MOCK QUESTIONS (Now with factual structure)
+// FALLBACK: EXPERT-ASKED QUESTIONS
 // ═══════════════════════════════════════════════════════════
+// When AI fails, the expert asks the question instead
 
 async function getMockQuestions(category: string, playerName: string): Promise<TriviaQuestion[]> {
-  console.log(`[AI Engine] Using fallback mock questions for: ${category}`);
+  console.log(`[AI Engine] Using fallback - expert will ask questions for: ${category}`);
   
   // Still try to get a fun display name even for fallback
   const displayCategory = await generateAdjacentCategoryName(category).catch(() => category);
 
-  // These are generic but still factual-style questions
+  // Fallback: Expert asks the question verbally
+  // This is a graceful degradation when AI can't generate questions
   return [
     {
       originalCategory: category,
       displayCategory,
       difficulty: 100,
-      questionText: `what's the most famous or well-known thing about ${category}?`,
-      rangeText: `This is the easy one - go with the obvious answer.`,
+      questionText: `the expert will ask you an easy question about ${category}...`,
+      rangeText: `This should be something anyone who's heard of ${category} would know.`,
       answer: {
-        display: "The most famous fact about this topic",
-        acceptable: ["famous fact", "well known fact", "obvious answer"]
+        display: "(Expert asks the question verbally)",
+        acceptable: ["expert question", "verbal question"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 200,
-      questionText: `what's a basic fact someone familiar with ${category} would know?`,
-      rangeText: `If you've spent any time with ${category}, you probably know this.`,
+      questionText: `the expert will ask you a medium question about ${category}...`,
+      rangeText: `Something a casual fan would probably know.`,
       answer: {
-        display: "A commonly known fact",
-        acceptable: ["common fact", "basic fact", "known fact"]
+        display: "(Expert asks the question verbally)",
+        acceptable: ["expert question", "verbal question"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 300,
-      questionText: `what's a fact about ${category} that dedicated fans would know?`,
-      rangeText: `This one's for the real ${category} enthusiasts.`,
+      questionText: `the expert will ask you a harder question about ${category}...`,
+      rangeText: `This one's for dedicated ${category} fans.`,
       answer: {
-        display: "An enthusiast-level fact",
-        acceptable: ["fan fact", "enthusiast knowledge", "dedicated fan answer"]
+        display: "(Expert asks the question verbally)",
+        acceptable: ["expert question", "verbal question"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 400,
-      questionText: `what's an obscure trivia fact about ${category} that only experts know?`,
-      rangeText: `Deep cut territory - only true experts get this one.`,
+      questionText: `the expert will ask you an expert-level question about ${category}...`,
+      rangeText: `Only true ${category} experts would know this one.`,
       answer: {
-        display: "Expert-level trivia",
-        acceptable: ["expert answer", "obscure fact", "deep trivia"]
+        display: "(Expert asks the question verbally)",
+        acceptable: ["expert question", "verbal question"]
       }
     }
   ];
