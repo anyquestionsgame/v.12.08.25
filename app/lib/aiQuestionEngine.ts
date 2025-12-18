@@ -146,128 +146,190 @@ export async function generateQuestions(
 
     const systemPrompt = `You are a trivia question writer for "King of Hearts" by ANY QUESTIONS.
 
-QUESTION FORMAT:
-- Questions will be displayed as: "[Player Name], [your question text]"
+═══════════════════════════════════════════════════════════
+CRITICAL RULE #1: FACTUAL TRIVIA ONLY
+═══════════════════════════════════════════════════════════
+
+You MUST generate FACTUAL TRIVIA QUESTIONS with SPECIFIC, VERIFIABLE ANSWERS.
+
+NEVER GENERATE THESE (WILL BE REJECTED):
+❌ "What comes to mind when you think of X?"
+❌ "What's your opinion on X?"
+❌ "Describe something about X"
+❌ "What do you associate with X?"
+❌ "What's something interesting about X?"
+❌ Answers like "any reasonable answer" or "varies" or "depends" or "group decides"
+
+ALWAYS GENERATE THESE:
+✅ "What year did X happen?" → "1985"
+✅ "Who invented X?" → "Thomas Edison"
+✅ "What company makes X?" → "Ford"
+✅ "How many X are there?" → "47"
+✅ "What is the name of X?" → "Specific Name"
+✅ Answers that are OBJECTIVELY CORRECT OR INCORRECT
+
+EXAMPLE - CATEGORY: "Trucks"
+BAD: "What comes to mind when someone mentions trucks?" 
+     Answer: "any reasonable answer" ← NEVER DO THIS
+
+GOOD: "What's the best-selling truck in America for 40+ years?"
+      Answer: "Ford F-150" ← SPECIFIC, VERIFIABLE FACT
+
+BAD: "What do you think makes a good truck?"
+     Answer: "varies by person" ← NEVER DO THIS
+
+GOOD: "What year did Ford switch the F-150 to an aluminum body?"
+      Answer: "2015" ← SPECIFIC, VERIFIABLE FACT
+
+═══════════════════════════════════════════════════════════
+QUESTION FORMAT
+═══════════════════════════════════════════════════════════
+
+- Questions displayed as: "[Player Name], [your question text]"
 - DO NOT include the player name in your question text
-- Start questions directly with the question (lowercase is fine)
-- Write as if speaking to the player (use "you" naturally)
+- Start directly with the question (lowercase is fine)
+- All questions must have a SINGLE CORRECT ANSWER or small set of correct answers
 
-RANGE TEXT FORMAT:
-- Range text will be displayed as: "What's your best guess? [your range text]"
-- Your range text should flow naturally after "What's your best guess?"
-- CAN reference the player by name in range text for personality
-- Make it conversational and slightly sarcastic
+═══════════════════════════════════════════════════════════
+RANGE TEXT FORMAT
+═══════════════════════════════════════════════════════════
 
-THE ANY QUESTIONS VOICE:
-- Hyper-specific brands/references (Trader Joe's not grocery store)
-- Worst-case timing humor
-- Chronically online but universally understood
-- Test: Would someone say "Oh god, that's SO specific but SO true"?
+- Displayed as: "What's your best guess? [your range text]"
+- For numbers: specify acceptable range ("within 5 years", "within 1000 lbs")
+- For facts: give a helpful hint about the answer format
+- Conversational, slightly sarcastic but friendly
 
-EXAMPLES:
+GOOD RANGE TEXT:
+- "We'll give you within 5 years on this one"
+- "It's an American company... that narrows it down"
+- "Three letters, starts with F"
+- "The number might surprise you - within 10% works"
 
-BAD (includes player name in question):
-questionText: "Sarah, in what year did the Titanic sink?"
-❌ We'll prepend the name - don't include it
+═══════════════════════════════════════════════════════════
+THE ANY QUESTIONS VOICE
+═══════════════════════════════════════════════════════════
 
-GOOD (clean question):
-questionText: "in what year did the Titanic sink?"
-✅ We prepend: "Sarah, in what year did the Titanic sink?"
+- Hyper-specific references make it fun
+- Conversational, not stuffy trivia-host style
+- Makes even obscure facts feel approachable
+- Slightly cheeky but never mean
 
-BAD (range text doesn't flow):
-rangeText: "The answer needs to be within 5 years."
-❌ Doesn't flow after "What's your best guess?"
+All answers MUST include acceptable variations (alternate spellings, nicknames, ranges for numbers).`;
 
-GOOD (flows naturally):
-rangeText: "We'll give you within 5 years... is that fair?"
-✅ Full display: "What's your best guess? We'll give you within 5 years... is that fair?"
-
-MORE GOOD RANGE TEXT EXAMPLES:
-- "We'll accept within 10 because it's the holidays"
-- "Within 3 works - we're not monsters"
-- "Ballpark is fine... we're being generous today"
-- "Within 5 years... feeling confident?"
-- "We'll give you some wiggle room here - within 10?"
-
-RANGE TEXT STYLE:
-- Conversational, not formal
-- Can be sarcastic but not mean
-- Reference specific circumstances ("it's the holidays", "we're being nice")
-- Should sound like a friend giving you a break
-
-Questions must be Google-verifiable facts with specific answers.
-All answers must include acceptable variations (misspellings, ranges for numbers, etc.)`;
-
-    const userPrompt = `Generate 4 trivia questions about "${category}" with STRICT difficulty scaling.
+    const userPrompt = `Generate 4 FACTUAL TRIVIA questions about "${category}" with STRICT difficulty scaling.
 The current player is ${playerName}. The expert who can steal is ${expertName}.
 
 ═══════════════════════════════════════════════════════════
-DIFFICULTY REQUIREMENTS (CRITICAL - READ CAREFULLY)
+ABSOLUTE REQUIREMENT: FACTUAL QUESTIONS ONLY
 ═══════════════════════════════════════════════════════════
 
-100 POINTS - "I've heard of this":
-- Anyone who's casually aware of ${category} would know
-- The most famous/obvious fact about the topic
-- Pop culture level knowledge, no expertise needed
-- Example difficulty: "What color is Coca-Cola's logo?" (red)
-- Should feel like a gimme
+Every question MUST be:
+- A verifiable fact with a specific answer
+- Google-able and provable
+- NOT an opinion, feeling, or subjective experience
 
-200 POINTS - "I've engaged once or twice":
-- Requires having watched/read/experienced the topic at least once
-- Still fairly well-known, but not universal common knowledge
-- Casual fans get it, complete outsiders might not
-- Example difficulty: "Who founded Microsoft?" (Bill Gates)
-
-300 POINTS - "I'm a regular fan":
-- Requires consistent engagement with the topic
-- Dedicated fans would know, casuals might struggle
-- Deeper than surface level, but not obscure
-- Example difficulty: "What year did Apple release the first iPhone?" (2007)
-
-400 POINTS - "I'm an expert":
-- Only dedicated fans/experts know this
-- Deep trivia, obscure facts, specific details
-- Might require research even for fans
-- Example difficulty: "How many episodes of Breaking Bad were directed by Vince Gilligan?" (5)
-- Should make even experts think
-
-CRITICAL SCALING RULES:
-- Each question MUST be noticeably harder than the previous
-- If unsure, make 100 TOO EASY and 400 TOO HARD rather than all medium
-- Test: Could someone who knows nothing about ${category} answer the 100? They should.
-- Test: Could an expert struggle with the 400? They might.
+If ${expertName} is the expert on ${category}, they should be able to STEAL
+the hard questions by knowing facts that ${playerName} doesn't.
 
 ═══════════════════════════════════════════════════════════
-FORMATTING REQUIREMENTS
+DIFFICULTY CALIBRATION (READ CAREFULLY)
 ═══════════════════════════════════════════════════════════
 
-- questionText: Start directly with the question (we'll add "${playerName}," at the beginning)
-- rangeText: Should flow naturally after "What's your best guess?"
-- Use the ANY QUESTIONS voice - hyper-specific, slightly sarcastic
+100 POINTS - "Zero expertise needed":
+- Someone who has NEVER studied ${category} could answer this
+- General pop culture / common knowledge level
+- The most famous, obvious fact about the topic
+- Answerable in under 5 seconds with no research
+- Example for "Trucks": "What company makes the F-150?" (Ford)
+- Example for "Wine": "What country is Champagne from?" (France)
+- Example for "Excel": "What company makes Excel?" (Microsoft)
 
-EXAMPLE OUTPUT:
+200 POINTS - "Casual familiarity":
+- Someone who has engaged with ${category} once or twice would know
+- Not universal knowledge, but fairly well-known
+- Casual fans get it right, complete outsiders might struggle
+- Example for "Trucks": "What does F-150 stand for the 150 of?" (payload capacity class)
+- Example for "Wine": "What grape makes Chardonnay?" (Chardonnay grape)
+- Example for "Excel": "What's the keyboard shortcut to save?" (Ctrl+S)
+
+300 POINTS - "Regular engagement required":
+- Requires consistent exposure to ${category}
+- Dedicated fans would know, casuals would struggle
+- The kind of fact you'd know if you follow this topic
+- Example for "Trucks": "What year did Ford switch F-150 to aluminum body?" (2015)
+- Example for "Wine": "What are the 3 grapes allowed in Champagne?" (Chardonnay, Pinot Noir, Pinot Meunier)
+- Example for "Excel": "What's the row limit in modern Excel?" (1,048,576)
+
+400 POINTS - "Expert knowledge only":
+- Only dedicated experts/enthusiasts know this
+- Deep trivia, obscure facts, specific technical details
+- Even regular fans might need to guess
+- The expert (${expertName}) should have an advantage here
+- Example for "Trucks": "What's the towing capacity of a 2024 F-150 with the 3.5L EcoBoost?" (14,000 lbs)
+- Example for "Wine": "What's the minimum aging time for Champagne?" (15 months for non-vintage)
+- Example for "Excel": "What's the maximum number of arguments in CONCATENATE?" (255)
+
+CRITICAL SCALING TEST:
+- 100: Would a random person on the street know this? YES = good
+- 400: Would only someone who studies ${category} know this? YES = good
+- If all 4 feel similar difficulty, you've failed
+
+═══════════════════════════════════════════════════════════
+ANSWER FORMAT REQUIREMENTS
+═══════════════════════════════════════════════════════════
+
+"display": The primary correct answer shown to players
+"acceptable": Array of ALL valid answers including:
+  - Common misspellings
+  - Abbreviations and full names
+  - Reasonable numerical ranges (for number questions)
+  - Nicknames or alternate names
+
+EXAMPLE ANSWER:
 {
-  "category": "${category}",
-  "difficulty": 100,
-  "questionText": "what's the most famous wine region in France?",
-  "rangeText": "We'll give you 3 guesses... it's the obvious one",
-  "answer": {
-    "display": "Bordeaux or Champagne",
-    "acceptable": ["Bordeaux", "Champagne", "Burgundy", "Bourgogne"]
-  }
+  "display": "Ford F-150",
+  "acceptable": ["Ford F-150", "F-150", "F150", "Ford F150", "the F-150"]
 }
+
+═══════════════════════════════════════════════════════════
+JSON OUTPUT FORMAT
+═══════════════════════════════════════════════════════════
 
 Return ONLY valid JSON:
 {
   "questions": [
-    { "category": "${category}", "difficulty": 100, "questionText": "...", "rangeText": "...", "answer": { "display": "...", "acceptable": ["..."] } },
-    { "category": "${category}", "difficulty": 200, "questionText": "...", "rangeText": "...", "answer": { "display": "...", "acceptable": ["..."] } },
-    { "category": "${category}", "difficulty": 300, "questionText": "...", "rangeText": "...", "answer": { "display": "...", "acceptable": ["..."] } },
-    { "category": "${category}", "difficulty": 400, "questionText": "...", "rangeText": "...", "answer": { "display": "...", "acceptable": ["..."] } }
+    { 
+      "category": "${category}", 
+      "difficulty": 100, 
+      "questionText": "what company makes the most popular truck in America?",
+      "rangeText": "It's an American company... big hint there",
+      "answer": { "display": "Ford", "acceptable": ["Ford", "Ford Motor Company", "Ford Motors"] }
+    },
+    { 
+      "category": "${category}", 
+      "difficulty": 200, 
+      "questionText": "...",
+      "rangeText": "...",
+      "answer": { "display": "...", "acceptable": ["..."] }
+    },
+    { 
+      "category": "${category}", 
+      "difficulty": 300, 
+      "questionText": "...",
+      "rangeText": "...",
+      "answer": { "display": "...", "acceptable": ["..."] }
+    },
+    { 
+      "category": "${category}", 
+      "difficulty": 400, 
+      "questionText": "...",
+      "rangeText": "...",
+      "answer": { "display": "...", "acceptable": ["..."] }
+    }
   ]
 }
 
-Make questions specific and fun - but RESPECT THE DIFFICULTY CURVE!`;
+Generate FACTUAL questions with SPECIFIC answers. RESPECT THE DIFFICULTY CURVE!`;
 
     // ═══════════════════════════════════════════════════════════
     // API CALL
@@ -280,7 +342,7 @@ Make questions specific and fun - but RESPECT THE DIFFICULTY CURVE!`;
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.8, // Creative but not random
+      temperature: 0.7, // Slightly lower for more factual responses
       max_tokens: 2000,
     });
 
@@ -334,7 +396,7 @@ Make questions specific and fun - but RESPECT THE DIFFICULTY CURVE!`;
 }
 
 // ═══════════════════════════════════════════════════════════
-// FALLBACK: MOCK QUESTIONS
+// FALLBACK: MOCK QUESTIONS (Now with factual structure)
 // ═══════════════════════════════════════════════════════════
 
 async function getMockQuestions(category: string, playerName: string): Promise<TriviaQuestion[]> {
@@ -343,46 +405,47 @@ async function getMockQuestions(category: string, playerName: string): Promise<T
   // Still try to get a fun display name even for fallback
   const displayCategory = await generateAdjacentCategoryName(category).catch(() => category);
 
+  // These are generic but still factual-style questions
   return [
     {
       originalCategory: category,
       displayCategory,
       difficulty: 100,
-      questionText: `what's the first thing that comes to mind when someone mentions ${category}?`,
-      rangeText: `No tricks here, ${playerName} - just say literally anything.`,
+      questionText: `what's the most famous or well-known thing about ${category}?`,
+      rangeText: `This is the easy one - go with the obvious answer.`,
       answer: {
-        display: "We'll accept any reasonable answer",
-        acceptable: ["any answer", "reasonable guess", "good try"]
+        display: "The most famous fact about this topic",
+        acceptable: ["famous fact", "well known fact", "obvious answer"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 200,
-      questionText: `if you've spent more than 10 minutes thinking about ${category}, you probably know this one...`,
-      rangeText: `Ballpark is fine - we're being generous because it's the holidays.`,
+      questionText: `what's a basic fact someone familiar with ${category} would know?`,
+      rangeText: `If you've spent any time with ${category}, you probably know this.`,
       answer: {
         display: "A commonly known fact",
-        acceptable: ["common fact", "well known", "popular answer"]
+        acceptable: ["common fact", "basic fact", "known fact"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 300,
-      questionText: `here's one for the dedicated ${category} fans in the room...`,
-      rangeText: `We'll give you some wiggle room, ${playerName}... feeling confident?`,
+      questionText: `what's a fact about ${category} that dedicated fans would know?`,
+      rangeText: `This one's for the real ${category} enthusiasts.`,
       answer: {
-        display: "Dedicated fan knowledge",
-        acceptable: ["fan fact", "insider knowledge", "deep cut"]
+        display: "An enthusiast-level fact",
+        acceptable: ["fan fact", "enthusiast knowledge", "dedicated fan answer"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 400,
-      questionText: `okay, this is the deep cut - only true ${category} obsessives would know this...`,
-      rangeText: `This is the big one - be precise. No pressure, ${playerName}.`,
+      questionText: `what's an obscure trivia fact about ${category} that only experts know?`,
+      rangeText: `Deep cut territory - only true experts get this one.`,
       answer: {
         display: "Expert-level trivia",
         acceptable: ["expert answer", "obscure fact", "deep trivia"]
@@ -452,4 +515,3 @@ export async function preGenerateAllQuestions(
   console.log(`[AI Engine] Pre-generation complete: ${results.size} categories`);
   return results;
 }
-
