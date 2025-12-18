@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface PlayerSetupData {
@@ -12,7 +12,20 @@ interface PlayerSetupData {
 
 type SetupPhase = 'input' | 'generating' | 'ready';
 
+// Wrapper component to handle Suspense for useSearchParams
 export default function KingOfHeartsSetup() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[#FFF8DC] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#C41E3A] border-t-transparent rounded-full animate-spin" />
+      </main>
+    }>
+      <KingOfHeartsSetupContent />
+    </Suspense>
+  );
+}
+
+function KingOfHeartsSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
