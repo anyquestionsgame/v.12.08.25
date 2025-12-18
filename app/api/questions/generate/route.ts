@@ -166,7 +166,6 @@ function getFallbackQuestions(category: string, playerName: string): TriviaQuest
   return [100, 200, 300, 400].map(difficulty => ({
     originalCategory: category,
 displayCategory: category,
-    displayCategory: category, // Use same name for fallback
     difficulty: difficulty as 100 | 200 | 300 | 400,
     questionText: `Here's a ${difficulty}-point question about ${category}. What's something interesting about this topic?`,
     rangeText: `We'll be generous with this one, ${playerName}.`,
