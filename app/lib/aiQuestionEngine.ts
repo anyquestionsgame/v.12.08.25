@@ -20,12 +20,20 @@ export interface TriviaQuestion {
 const adjacentNameCache = new Map<string, string>();
 
 // ═══════════════════════════════════════════════════════════
-// OPENAI CLIENT INITIALIZATION
+// OPENAI CLIENT INITIALIZATION (LAZY)
 // ═══════════════════════════════════════════════════════════
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+}
 
 // ═══════════════════════════════════════════════════════════
 // IN-MEMORY CACHE
@@ -82,7 +90,7 @@ The category should surprise players when they learn whose expertise it is.`;
     const userPrompt = `Generate ONE adjacent category name for: "${category}"
 Return ONLY the category name, nothing else. No quotes, no explanation.`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -265,7 +273,7 @@ Make questions specific and fun - but RESPECT THE DIFFICULTY CURVE!`;
     // API CALL
     // ═══════════════════════════════════════════════════════════
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini', // Cheap and fast
       messages: [
         { role: 'system', content: systemPrompt },
