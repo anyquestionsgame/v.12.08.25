@@ -168,314 +168,87 @@ export async function generateQuestions(
 
   try {
     // ═══════════════════════════════════════════════════════════
-    // OPENAI PROMPTS
+    // SIMPLE PROMPTS + MULTIPLE FEW-SHOT EXAMPLES
     // ═══════════════════════════════════════════════════════════
 
-    const systemPrompt = `You are a trivia question writer. Generate DIRECT FACTUAL QUESTIONS only.
+    const systemPrompt = `You are a trivia question generator. Generate factual trivia questions that test specific knowledge. 
 
-╔═══════════════════════════════════════════════════════════╗
-║  CRITICAL INSTRUCTIONS FOR JSON FIELDS - READ FIRST       ║
-╚═══════════════════════════════════════════════════════════╝
+Each question must:
+- Ask about ONE specific fact
+- Have ONE correct factual answer (a name, number, year, or place)
+- Start with Who/What/When/Where/Which/How many
 
-The 'questionText' field must contain THE ACTUAL TRIVIA QUESTION ITSELF.
-This is the literal question that will be read aloud to the player.
+Difficulty scaling:
+- 100 points: Common knowledge anyone would know
+- 200 points: Casual familiarity with the topic
+- 300 points: Regular engagement required  
+- 400 points: Expert-level deep knowledge
 
-CORRECT examples of questionText:
-- "Who wrote the novel Ulysses?"
-- "In what year was Dubliners published?"
-- "What Irish county is James Joyce from?"
-- "How many chapters are in Finnegans Wake?"
+Return valid JSON with a "questions" array.`;
 
-WRONG examples of questionText (NEVER DO THIS):
-- "the expert will ask you a question about Irish Literature"
-- "name an Irish author"
-- "what's a fact about Joyce"
-- Any text that describes the question instead of being the question
-
-Remember: questionText = THE QUESTION ITSELF, WORD FOR WORD, AS IT WILL BE SPOKEN.
-
-Not instructions. Not descriptions. The literal question.
-
-Format: Start with a question word (Who/What/When/Where/How) or 'Is/Are/Was/Were'.
-
-╔═══════════════════════════════════════════════════════════╗
-║  CRITICAL FORMAT REQUIREMENT                              ║
-╚═══════════════════════════════════════════════════════════╝
-
-You must ask DIRECT FACTUAL QUESTIONS, not meta-questions.
-
-❌ WRONG - META-QUESTIONS (DO NOT GENERATE THESE):
-- "What's an obscure fact about cooking?"
-- "Name something only experts know about wine"
-- "Tell me an expert-level detail about trucks"
-- "What would a cooking expert know?"
-- "Share a deep-cut fact about pottery"
-- "What's something interesting about X?"
-- "What's a fact that requires expertise?"
-
-✅ CORRECT - DIRECT TRIVIA QUESTIONS (ALWAYS USE THIS FORMAT):
-- "At what temperature does the Maillard reaction occur?" → "300-500°F"
-- "Which Italian region produces Barolo wine?" → "Piedmont"
-- "What's the payload capacity of a 2024 Ford F-150?" → "3,250 lbs"
-- "What is the term for leather-hard clay?" → "Greenware"
-- "What year was the first iPhone released?" → "2007"
-- "Who directed Pulp Fiction?" → "Quentin Tarantino"
-
-THE QUESTION MUST:
-1. Ask about ONE specific fact
-2. Have ONE correct answer (a fact, number, name, or date)
-3. Test if the player KNOWS this specific fact
-4. NOT ask the player to generate/name/share/tell a fact
-
-BANNED PHRASES - NEVER START A QUESTION WITH:
-- "What's a fact about..."
-- "Name something..."
-- "Tell me..."
-- "Share a..."
-- "What would an expert know..."
-- "What's something interesting..."
-- "What's an obscure fact..."
-
-REQUIRED QUESTION STARTERS:
-- "What is..." / "What was..."
-- "Which..." / "Who..."
-- "How many..." / "How much..."
-- "What year..." / "In what year..."
-- "What temperature..." / "At what..."
-- "Where is..." / "Where was..."
-
-═══════════════════════════════════════════════════════════
-EXAMPLES BY CATEGORY
-═══════════════════════════════════════════════════════════
-
-COOKING:
-❌ WRONG: "What's something a chef would know about cooking?"
-✅ RIGHT: "What temperature does water boil at sea level?" → "212°F / 100°C"
-
-WINE:
-❌ WRONG: "Name an expert-level wine fact"
-✅ RIGHT: "Which grape is used to make Champagne's base wine?" → "Chardonnay, Pinot Noir, or Pinot Meunier"
-
-TRUCKS:
-❌ WRONG: "Tell me something only truck experts know"
-✅ RIGHT: "What year did Ford switch the F-150 to an aluminum body?" → "2015"
-
-POTTERY:
-❌ WRONG: "Share a deep-cut pottery fact"
-✅ RIGHT: "What temperature is required to fire stoneware?" → "2200-2400°F"
-
-═══════════════════════════════════════════════════════════
-QUESTION DISPLAY FORMAT
-═══════════════════════════════════════════════════════════
-
-- Questions displayed as: "[Player Name], [your question text]"
-- DO NOT include the player name - we add it
-- Start directly with the question (lowercase is fine)
-
-═══════════════════════════════════════════════════════════
-RANGE TEXT FORMAT
-═══════════════════════════════════════════════════════════
-
-- Displayed as: "What's your best guess? [your range text]"
-- For numbers: specify acceptable range ("within 5 years", "within 100 lbs")
-- For names: give a helpful hint ("It's a French region", "Think American companies")
-- Keep it conversational and slightly playful
-
-All answers MUST include acceptable variations (alternate spellings, nicknames, ranges for numbers).`;
-
-    const userPrompt = `Generate 4 DIRECT FACTUAL TRIVIA questions about "${category}".
-The current player is ${playerName}. The expert who can steal is ${expertName}.
-
-╔═══════════════════════════════════════════════════════════╗
-║  REMINDER: NO META-QUESTIONS                              ║
-╚═══════════════════════════════════════════════════════════╝
-
-❌ DO NOT WRITE: "What's a fact about ${category}?"
-❌ DO NOT WRITE: "Name something an expert would know about ${category}"
-❌ DO NOT WRITE: "What's something interesting about ${category}?"
-
-✅ WRITE QUESTIONS LIKE:
-- "What is [specific thing about ${category}]?"
-- "Which [specific thing] is associated with ${category}?"
-- "How many/much [specific measurement about ${category}]?"
-- "What year did [specific event about ${category}] happen?"
-
-Each question must have ONE specific, factual answer.
-If ${expertName} is the expert, they should know the HARD questions that ${playerName} might not.
-
-═══════════════════════════════════════════════════════════
-DIFFICULTY CALIBRATION (READ CAREFULLY)
-═══════════════════════════════════════════════════════════
-
-100 POINTS - "Zero expertise needed":
-- Someone who has NEVER studied ${category} could answer this
-- General pop culture / common knowledge level
-- The most famous, obvious fact about the topic
-- Answerable in under 5 seconds with no research
-- Example for "Trucks": "What company makes the F-150?" (Ford)
-- Example for "Wine": "What country is Champagne from?" (France)
-- Example for "Excel": "What company makes Excel?" (Microsoft)
-
-200 POINTS - "Casual familiarity":
-- Someone who has engaged with ${category} once or twice would know
-- Not universal knowledge, but fairly well-known
-- Casual fans get it right, complete outsiders might struggle
-- Example for "Trucks": "What does F-150 stand for the 150 of?" (payload capacity class)
-- Example for "Wine": "What grape makes Chardonnay?" (Chardonnay grape)
-- Example for "Excel": "What's the keyboard shortcut to save?" (Ctrl+S)
-
-300 POINTS - "Regular engagement required":
-- Requires consistent exposure to ${category}
-- Dedicated fans would know, casuals would struggle
-- The kind of fact you'd know if you follow this topic
-- Example for "Trucks": "What year did Ford switch F-150 to aluminum body?" (2015)
-- Example for "Wine": "What are the 3 grapes allowed in Champagne?" (Chardonnay, Pinot Noir, Pinot Meunier)
-- Example for "Excel": "What's the row limit in modern Excel?" (1,048,576)
-
-400 POINTS - "Expert knowledge only":
-- Only dedicated experts/enthusiasts know this
-- Deep trivia, obscure facts, specific technical details
-- Even regular fans might need to guess
-- The expert (${expertName}) should have an advantage here
-- Example for "Trucks": "What's the towing capacity of a 2024 F-150 with the 3.5L EcoBoost?" (14,000 lbs)
-- Example for "Wine": "What's the minimum aging time for Champagne?" (15 months for non-vintage)
-- Example for "Excel": "What's the maximum number of arguments in CONCATENATE?" (255)
-
-CRITICAL SCALING TEST:
-- 100: Would a random person on the street know this? YES = good
-- 400: Would only someone who studies ${category} know this? YES = good
-- If all 4 feel similar difficulty, you've failed
-
-═══════════════════════════════════════════════════════════
-ANSWER FORMAT REQUIREMENTS
-═══════════════════════════════════════════════════════════
-
-"display": The primary correct answer shown to players
-"acceptable": Array of ALL valid answers including:
-  - Common misspellings
-  - Abbreviations and full names
-  - Reasonable numerical ranges (for number questions)
-  - Nicknames or alternate names
-
-EXAMPLE ANSWER:
-{
-  "display": "Ford F-150",
-  "acceptable": ["Ford F-150", "F-150", "F150", "Ford F150", "the F-150"]
-}
-
-═══════════════════════════════════════════════════════════
-JSON OUTPUT FORMAT
-═══════════════════════════════════════════════════════════
-
-Return ONLY valid JSON:
-{
-  "questions": [
-    { 
-      "category": "${category}", 
-      "difficulty": 100, 
-      "questionText": "what company makes the most popular truck in America?",
-      "rangeText": "It's an American company... big hint there",
-      "answer": { "display": "Ford", "acceptable": ["Ford", "Ford Motor Company", "Ford Motors"] }
-    },
-    { 
-      "category": "${category}", 
-      "difficulty": 200, 
-      "questionText": "...",
-      "rangeText": "...",
-      "answer": { "display": "...", "acceptable": ["..."] }
-    },
-    { 
-      "category": "${category}", 
-      "difficulty": 300, 
-      "questionText": "...",
-      "rangeText": "...",
-      "answer": { "display": "...", "acceptable": ["..."] }
-    },
-    { 
-      "category": "${category}", 
-      "difficulty": 400, 
-      "questionText": "...",
-      "rangeText": "...",
-      "answer": { "display": "...", "acceptable": ["..."] }
-    }
-  ]
-}
-
-FINAL CHECK before outputting:
-- Does each question ask about ONE specific fact? ✓
-- Does each question have ONE correct answer? ✓
-- Did you avoid "what's a fact about..." or "name something..."? ✓
-
-Generate DIRECT trivia questions with SPECIFIC answers. NO META-QUESTIONS!`;
+    const userPrompt = `Generate 4 trivia questions about "${category}" at difficulties 100, 200, 300, 400. Follow the exact format shown in the examples.`;
 
     // ═══════════════════════════════════════════════════════════
-    // API CALL
+    // FEW-SHOT EXAMPLES - Show don't tell
     // ═══════════════════════════════════════════════════════════
 
-    // Few-shot example to show the AI exactly what format we want
-    const fewShotExample = {
+    const wineExample = {
       questions: [
-        {
-          category: "Wine",
-          difficulty: 100,
-          questionText: "which country produces Champagne?",
-          rangeText: "Think major wine regions - this is wine 101.",
-          answer: {
-            display: "France",
-            acceptable: ["France", "French"]
-          }
-        },
-        {
-          category: "Wine",
-          difficulty: 200,
-          questionText: "what grape variety is used to make Pinot Grigio?",
-          rangeText: "It's in the name... kind of.",
-          answer: {
-            display: "Pinot Gris",
-            acceptable: ["Pinot Gris", "Pinot Grigio", "the Pinot Gris grape"]
-          }
-        },
-        {
-          category: "Wine",
-          difficulty: 300,
-          questionText: "what is the minimum aging requirement for non-vintage Champagne?",
-          rangeText: "We'll accept within 3 months.",
-          answer: {
-            display: "15 months",
-            acceptable: ["15 months", "15 mo", "12-18 months", "about 15 months"]
-          }
-        },
-        {
-          category: "Wine",
-          difficulty: 400,
-          questionText: "what is the maximum permitted yield in liters per hectare for Burgundy Grand Cru vineyards?",
-          rangeText: "This is deep wine nerd territory. Within 500 liters.",
-          answer: {
-            display: "3,500 liters",
-            acceptable: ["3500", "3,500", "3500 liters", "35 hectoliters"]
-          }
-        }
+        { category: "Wine", difficulty: 100, questionText: "which country produces Champagne?", rangeText: "Think major wine regions.", answer: { display: "France", acceptable: ["France", "French"] } },
+        { category: "Wine", difficulty: 200, questionText: "what grape variety is Pinot Grigio made from?", rangeText: "It's in the name.", answer: { display: "Pinot Gris", acceptable: ["Pinot Gris", "Pinot Grigio"] } },
+        { category: "Wine", difficulty: 300, questionText: "how many months must non-vintage Champagne age before release?", rangeText: "Within 3 months is fine.", answer: { display: "15 months", acceptable: ["15 months", "15", "12-18 months"] } },
+        { category: "Wine", difficulty: 400, questionText: "what is the maximum yield in hectoliters per hectare for Burgundy Grand Cru?", rangeText: "Deep wine nerd territory.", answer: { display: "35 hectoliters", acceptable: ["35", "35 hl", "3500 liters"] } }
+      ]
+    };
+
+    const realityTVExample = {
+      questions: [
+        { category: "Reality TV", difficulty: 100, questionText: "what year did the first season of Survivor premiere?", rangeText: "It was around Y2K.", answer: { display: "2000", acceptable: ["2000", "two thousand"] } },
+        { category: "Reality TV", difficulty: 200, questionText: "which network originally aired The Bachelor?", rangeText: "One of the big broadcast networks.", answer: { display: "ABC", acceptable: ["ABC", "the ABC"] } },
+        { category: "Reality TV", difficulty: 300, questionText: "how many contestants typically start a season of RuPaul's Drag Race?", rangeText: "Within 2 is fine.", answer: { display: "12-14", acceptable: ["12", "13", "14", "12-14", "thirteen"] } },
+        { category: "Reality TV", difficulty: 400, questionText: "what was the original cash prize for winning the first season of Big Brother US?", rangeText: "It was less than you'd think.", answer: { display: "$500,000", acceptable: ["500000", "$500,000", "500k", "half a million"] } }
+      ]
+    };
+
+    const cookingExample = {
+      questions: [
+        { category: "Cooking", difficulty: 100, questionText: "at what temperature Fahrenheit does water boil at sea level?", rangeText: "Basic kitchen science.", answer: { display: "212°F", acceptable: ["212", "212 degrees", "212°F", "100 celsius"] } },
+        { category: "Cooking", difficulty: 200, questionText: "what Italian word describes pasta cooked to be firm to the bite?", rangeText: "You've seen this on menus.", answer: { display: "al dente", acceptable: ["al dente", "aldente"] } },
+        { category: "Cooking", difficulty: 300, questionText: "what is the French term for a mixture of diced carrots, celery, and onions?", rangeText: "Classic culinary foundation.", answer: { display: "mirepoix", acceptable: ["mirepoix", "mire poix"] } },
+        { category: "Cooking", difficulty: 400, questionText: "at what temperature range Fahrenheit does the Maillard reaction occur?", rangeText: "Within 50 degrees is fine.", answer: { display: "280-330°F", acceptable: ["280", "300", "320", "280-330", "around 300"] } }
+      ]
+    };
+
+    const trucksExample = {
+      questions: [
+        { category: "Trucks", difficulty: 100, questionText: "what company manufactures the F-150?", rangeText: "America's best-selling truck.", answer: { display: "Ford", acceptable: ["Ford", "Ford Motor Company"] } },
+        { category: "Trucks", difficulty: 200, questionText: "what does the number 1500 typically indicate in truck model names like Ram 1500?", rangeText: "Think about what trucks carry.", answer: { display: "half-ton payload class", acceptable: ["half ton", "1/2 ton", "payload class", "weight class"] } },
+        { category: "Trucks", difficulty: 300, questionText: "what year did Ford switch the F-150 body to aluminum?", rangeText: "Within 2 years.", answer: { display: "2015", acceptable: ["2015", "2014", "2016"] } },
+        { category: "Trucks", difficulty: 400, questionText: "what is the maximum towing capacity in pounds of a 2024 Ford F-150 with the 3.5L EcoBoost?", rangeText: "Within 1000 lbs.", answer: { display: "14,000 lbs", acceptable: ["14000", "14,000", "13000-14000", "around 14000"] } }
       ]
     };
 
     const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o', // More expensive but better instruction following
+      model: 'gpt-4o', // Full model for better instruction following
       messages: [
         { role: 'system', content: systemPrompt },
-        // Few-shot example: show the AI a perfect response
-        { 
-          role: 'user', 
-          content: 'Generate 4 DIRECT FACTUAL TRIVIA questions about "Wine". The current player is Sarah. The expert who can steal is Marcus.'
-        },
-        {
-          role: 'assistant',
-          content: JSON.stringify(fewShotExample)
-        },
-        // Now the actual request
+        // Few-shot example 1: Wine
+        { role: 'user', content: 'Generate 4 trivia questions about "Wine" at difficulties 100, 200, 300, 400.' },
+        { role: 'assistant', content: JSON.stringify(wineExample) },
+        // Few-shot example 2: Reality TV
+        { role: 'user', content: 'Generate 4 trivia questions about "Reality TV" at difficulties 100, 200, 300, 400.' },
+        { role: 'assistant', content: JSON.stringify(realityTVExample) },
+        // Few-shot example 3: Cooking
+        { role: 'user', content: 'Generate 4 trivia questions about "Cooking" at difficulties 100, 200, 300, 400.' },
+        { role: 'assistant', content: JSON.stringify(cookingExample) },
+        // Few-shot example 4: Trucks
+        { role: 'user', content: 'Generate 4 trivia questions about "Trucks" at difficulties 100, 200, 300, 400.' },
+        { role: 'assistant', content: JSON.stringify(trucksExample) },
+        // Actual request
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.5, // Lower for more consistent, instruction-following responses
+      temperature: 0.5,
       max_tokens: 2000,
     });
 
