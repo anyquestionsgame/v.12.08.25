@@ -174,7 +174,32 @@ export async function generateQuestions(
     const systemPrompt = `You are a trivia question writer. Generate DIRECT FACTUAL QUESTIONS only.
 
 ╔═══════════════════════════════════════════════════════════╗
-║  CRITICAL FORMAT REQUIREMENT - READ THIS FIRST            ║
+║  CRITICAL INSTRUCTIONS FOR JSON FIELDS - READ FIRST       ║
+╚═══════════════════════════════════════════════════════════╝
+
+The 'questionText' field must contain THE ACTUAL TRIVIA QUESTION ITSELF.
+This is the literal question that will be read aloud to the player.
+
+CORRECT examples of questionText:
+- "Who wrote the novel Ulysses?"
+- "In what year was Dubliners published?"
+- "What Irish county is James Joyce from?"
+- "How many chapters are in Finnegans Wake?"
+
+WRONG examples of questionText (NEVER DO THIS):
+- "the expert will ask you a question about Irish Literature"
+- "name an Irish author"
+- "what's a fact about Joyce"
+- Any text that describes the question instead of being the question
+
+Remember: questionText = THE QUESTION ITSELF, WORD FOR WORD, AS IT WILL BE SPOKEN.
+
+Not instructions. Not descriptions. The literal question.
+
+Format: Start with a question word (Who/What/When/Where/How) or 'Is/Are/Was/Were'.
+
+╔═══════════════════════════════════════════════════════════╗
+║  CRITICAL FORMAT REQUIREMENT                              ║
 ╚═══════════════════════════════════════════════════════════╝
 
 You must ask DIRECT FACTUAL QUESTIONS, not meta-questions.
@@ -453,56 +478,56 @@ Generate DIRECT trivia questions with SPECIFIC answers. NO META-QUESTIONS!`;
 // When AI fails, the expert asks the question instead
 
 async function getMockQuestions(category: string, playerName: string): Promise<TriviaQuestion[]> {
-  console.log(`[AI Engine] Using fallback - expert will ask questions for: ${category}`);
+  console.log(`[AI Engine] Using fallback questions for: ${category}`);
   
   // Still try to get a fun display name even for fallback
   const displayCategory = await generateAdjacentCategoryName(category).catch(() => category);
 
-  // Fallback: Expert asks the question verbally
-  // This is a graceful degradation when AI can't generate questions
+  // Fallback: Generic but properly formatted trivia questions
+  // These are real questions that can be asked and answered
   return [
     {
       originalCategory: category,
       displayCategory,
       difficulty: 100,
-      questionText: `the expert will ask you an easy question about ${category}...`,
-      rangeText: `This should be something anyone who's heard of ${category} would know.`,
+      questionText: `what is ${category} most commonly associated with?`,
+      rangeText: `Think of the first thing that comes to mind - the obvious answer.`,
       answer: {
-        display: "(Expert asks the question verbally)",
-        acceptable: ["expert question", "verbal question"]
+        display: "(Accept any reasonable answer)",
+        acceptable: ["any", "reasonable", "answer"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 200,
-      questionText: `the expert will ask you a medium question about ${category}...`,
-      rangeText: `Something a casual fan would probably know.`,
+      questionText: `what is a well-known fact about ${category}?`,
+      rangeText: `Something most people who know about ${category} would agree on.`,
       answer: {
-        display: "(Expert asks the question verbally)",
-        acceptable: ["expert question", "verbal question"]
+        display: "(Accept any reasonable answer)",
+        acceptable: ["any", "reasonable", "answer"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 300,
-      questionText: `the expert will ask you a harder question about ${category}...`,
-      rangeText: `This one's for dedicated ${category} fans.`,
+      questionText: `what is a specific detail about ${category} that casual fans might not know?`,
+      rangeText: `This requires some real knowledge of the topic.`,
       answer: {
-        display: "(Expert asks the question verbally)",
-        acceptable: ["expert question", "verbal question"]
+        display: "(Accept any reasonable answer)",
+        acceptable: ["any", "reasonable", "answer"]
       }
     },
     {
       originalCategory: category,
       displayCategory,
       difficulty: 400,
-      questionText: `the expert will ask you an expert-level question about ${category}...`,
-      rangeText: `Only true ${category} experts would know this one.`,
+      questionText: `what is an expert-level fact about ${category}?`,
+      rangeText: `Only true experts would know this one.`,
       answer: {
-        display: "(Expert asks the question verbally)",
-        acceptable: ["expert question", "verbal question"]
+        display: "(Accept any reasonable answer)",
+        acceptable: ["any", "reasonable", "answer"]
       }
     }
   ];
