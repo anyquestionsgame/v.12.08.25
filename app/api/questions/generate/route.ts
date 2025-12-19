@@ -165,17 +165,40 @@ async function handleBulkGeneration(body: any) {
   });
 }
 
-// Fallback questions if AI fails
+// Fallback questions if AI fails - these are REAL questions, not meta-descriptions
 function getFallbackQuestions(category: string, playerName: string): TriviaQuestion[] {
-  return [100, 200, 300, 400].map(difficulty => ({
+  const fallbackTemplates = [
+    { 
+      difficulty: 100, 
+      questionText: `what is the most famous thing associated with ${category}?`,
+      rangeText: `Think of the most obvious answer - we're being generous here.`
+    },
+    { 
+      difficulty: 200, 
+      questionText: `who is the most well-known person in the field of ${category}?`,
+      rangeText: `Any famous name related to ${category} works.`
+    },
+    { 
+      difficulty: 300, 
+      questionText: `what year did ${category} become widely popular or recognized?`,
+      rangeText: `We'll accept anything within 10 years.`
+    },
+    { 
+      difficulty: 400, 
+      questionText: `what is a technical term or insider phrase used in ${category}?`,
+      rangeText: `Only true ${category} experts would know this.`
+    }
+  ];
+
+  return fallbackTemplates.map(template => ({
     originalCategory: category,
-displayCategory: category,
-    difficulty: difficulty as 100 | 200 | 300 | 400,
-    questionText: `Here's a ${difficulty}-point question about ${category}. What's something interesting about this topic?`,
-    rangeText: `We'll be generous with this one, ${playerName}.`,
+    displayCategory: category,
+    difficulty: template.difficulty as 100 | 200 | 300 | 400,
+    questionText: template.questionText,
+    rangeText: template.rangeText,
     answer: {
-      display: "Ask the group to decide!",
-      acceptable: ["any reasonable answer", "group consensus"]
+      display: "(The expert will judge the answer)",
+      acceptable: ["any reasonable answer", "expert judgment"]
     }
   }));
 }

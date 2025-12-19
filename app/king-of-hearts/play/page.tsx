@@ -380,12 +380,12 @@ export default function KingOfHeartsPlay() {
   };
 
   const getFallbackQuestions = (category: string): TriviaQuestion[] => {
-    // Fallback: Expert asks the question verbally when AI fails
+    // Fallback: REAL questions (not meta-descriptions) when AI fails
     const fallbackData = [
-      { difficulty: 100, question: `the expert will ask you an easy question about ${category}...`, range: `Something anyone who's heard of ${category} would know.` },
-      { difficulty: 200, question: `the expert will ask you a medium question about ${category}...`, range: `Something a casual fan would probably know.` },
-      { difficulty: 300, question: `the expert will ask you a harder question about ${category}...`, range: `This one's for dedicated fans.` },
-      { difficulty: 400, question: `the expert will ask you an expert-level question about ${category}...`, range: `Only true experts would know this.` },
+      { difficulty: 100, question: `what is the most famous thing associated with ${category}?`, range: `Think of the most obvious answer - we're being generous.` },
+      { difficulty: 200, question: `who is the most well-known person in the field of ${category}?`, range: `Any famous name related to ${category} works.` },
+      { difficulty: 300, question: `what year did ${category} become widely popular or recognized?`, range: `We'll accept anything within 10 years.` },
+      { difficulty: 400, question: `what is a technical term or insider phrase used in ${category}?`, range: `Only true ${category} experts would know this.` },
     ];
     
     return fallbackData.map(({ difficulty, question, range }) => ({
@@ -395,8 +395,8 @@ export default function KingOfHeartsPlay() {
       questionText: question,
       rangeText: range,
       answer: {
-        display: "(Expert asks the question verbally)",
-        acceptable: ["expert question", "verbal question"]
+        display: "(The expert will judge the answer)",
+        acceptable: ["any reasonable answer", "expert judgment"]
       }
     }));
   };
