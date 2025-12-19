@@ -392,6 +392,14 @@ export default function KingOfHeartsEntry() {
             Need at least 4 players to start
           </p>
         )}
+
+        {/* Quick Test Link */}
+        <button
+          onClick={() => router.push('/king-of-hearts/setup')}
+          className="mt-8 px-4 py-2 font-body text-[14px] text-[#CD7F32] hover:text-[#A5682A] transition-colors underline underline-offset-2"
+        >
+          🧪 Quick Test Mode (test AI questions)
+        </button>
       </div>
     </main>
   );

@@ -48,6 +48,12 @@ function KingOfHeartsSetupContent() {
   const [generationProgress, setGenerationProgress] = useState<string>('');
   const [categoriesGenerated, setCategoriesGenerated] = useState(0);
 
+  // ═══════════════════════════════════════════════════════════
+  // QUICK TEST MODE
+  // ═══════════════════════════════════════════════════════════
+  const [quickTestMode, setQuickTestMode] = useState(false);
+  const [testCategory, setTestCategory] = useState('');
+
   // Parse player names from URL params
   const playerNames = useMemo(() => {
     const names: string[] = [];
@@ -171,6 +177,79 @@ function KingOfHeartsSetupContent() {
     }
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // QUICK TEST MODE - Single category test
+  // ═══════════════════════════════════════════════════════════
+  
+  const handleQuickTest = async () => {
+    if (!testCategory.trim()) return;
+    
+    setSetupPhase('generating');
+    setGenerationProgress(`Testing "${testCategory}" questions...`);
+    
+    // Create a single test player
+    const testPlayer: PlayerSetupData = {
+      name: 'Test Player',
+      selfCategory: testCategory.trim(),
+      peerCategory: testCategory.trim(), // Same category for both rounds
+      peerCategoryFrom: 'Test Player',
+    };
+    
+    const testPlayers = [testPlayer];
+    
+    // Only need one category for testing
+    const categories = [{ name: testCategory.trim(), expert: 'Test Player' }];
+    
+    console.log(`[Quick Test] Generating questions for: ${testCategory}`);
+    
+    try {
+      const response = await fetch('/api/questions/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categories,
+          players: ['Test Player'],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate questions');
+      }
+
+      console.log(`[Quick Test] Generated questions for: ${testCategory}`);
+      
+      // Store questions in localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('king_of_hearts_questions', JSON.stringify(data.questionsByCategory));
+        localStorage.setItem('king_of_hearts_players', JSON.stringify(testPlayers));
+        localStorage.removeItem('king_of_hearts_round'); // Start fresh
+      }
+
+      setSetupPhase('ready');
+      setGenerationProgress('Questions ready!');
+      
+      // Navigate to play
+      setTimeout(() => {
+        router.push('/king-of-hearts/play');
+      }, 500);
+
+    } catch (error) {
+      console.error('[Quick Test] Generation failed:', error);
+      setGenerationProgress('Generation failed - check console');
+      
+      // Still proceed with fallback
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('king_of_hearts_players', JSON.stringify(testPlayers));
+      }
+      
+      setTimeout(() => {
+        router.push('/king-of-hearts/play');
+      }, 2000);
+    }
+  };
+
   // Prevent SSR issues
   if (!mounted) {
     return (
@@ -180,19 +259,119 @@ function KingOfHeartsSetupContent() {
     );
   }
 
-  // Redirect if no players
-  if (playerNames.length === 0) {
+  // ═══════════════════════════════════════════════════════════
+  // QUICK TEST MODE UI (Available even without players)
+  // ═══════════════════════════════════════════════════════════
+  
+  if (quickTestMode || playerNames.length === 0) {
+    // Show Quick Test UI
+    if (setupPhase === 'generating' || setupPhase === 'ready') {
+      return (
+        <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
+          <div className="text-center max-w-[500px]">
+            <div className="mb-8 flex justify-center">
+              {setupPhase === 'generating' ? (
+                <div className="w-20 h-20 border-4 border-[#D4AF37] border-t-[#C41E3A] rounded-full animate-spin" />
+              ) : (
+                <div className="w-20 h-20 bg-[#165B33] rounded-full flex items-center justify-center">
+                  <span className="text-4xl">✓</span>
+                </div>
+              )}
+            </div>
+            
+            <h1 className="font-heading text-[36px] font-bold text-[#165B33]">
+              {setupPhase === 'generating' ? 'Generating questions...' : 'Ready!'}
+            </h1>
+            
+            <p className="mt-4 font-body text-[18px] text-[#52796F]">
+              {generationProgress}
+            </p>
+            
+            <div className="mt-8 px-6 py-3 bg-white rounded-full inline-block">
+              <span className="font-body text-[16px] text-[#165B33] font-semibold">
+                Testing: {testCategory}
+              </span>
+            </div>
+          </div>
+        </main>
+      );
+    }
+
     return (
-      <main className="min-h-screen bg-[#FFF8DC] flex flex-col items-center justify-center px-6">
-        <p className="font-body text-[16px] text-[#52796F] text-center">
-          No players found. Redirecting...
-        </p>
-        <button
-          onClick={() => router.push('/king-of-hearts')}
-          className="mt-6 px-8 py-4 bg-[#C41E3A] text-[#FFF8DC] font-body text-lg font-bold rounded-xl shadow-lg"
-        >
-          Go Back
-        </button>
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
+        <div className="w-full max-w-[500px]">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-block px-4 py-2 bg-[#CD7F32] text-white rounded-full mb-4">
+              <span className="font-body text-[14px] font-bold uppercase tracking-wider">🧪 Quick Test Mode</span>
+            </div>
+            <h1 className="font-heading text-[32px] font-bold text-[#165B33]">
+              Test a Category
+            </h1>
+            <p className="mt-2 font-body text-[16px] text-[#52796F]">
+              Quickly test how AI generates questions for any topic
+            </p>
+          </div>
+
+          {/* Category Input */}
+          <div className="bg-white rounded-2xl p-8 shadow-xl" style={{ boxShadow: "0 8px 30px rgba(196,30,58,0.15)" }}>
+            <label className="block font-body text-[18px] font-medium text-[#165B33] mb-4">
+              Enter a category to test:
+            </label>
+            <input
+              type="text"
+              value={testCategory}
+              onChange={(e) => setTestCategory(e.target.value)}
+              placeholder="e.g., Cooking, Wine, Trucks, Pottery..."
+              className="w-full h-[60px] px-5 bg-[#FFF8DC] border-2 border-[#C41E3A] rounded-xl font-body text-[18px] text-[#165B33] placeholder-[#52796F]/60 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/30"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && testCategory.trim()) {
+                  handleQuickTest();
+                }
+              }}
+            />
+            
+            <p className="mt-3 font-body text-[14px] text-[#52796F]">
+              This will generate 4 questions at different difficulty levels
+            </p>
+          </div>
+
+          {/* Generate Button */}
+          <button
+            onClick={handleQuickTest}
+            disabled={!testCategory.trim()}
+            className={`
+              mt-6 w-full py-5 font-body text-lg font-bold rounded-xl cursor-pointer
+              transition-all duration-150 ease-out select-none
+              ${testCategory.trim()
+                ? 'bg-[#C41E3A] text-[#FFF8DC] hover:bg-[#A91830] active:scale-[0.98] shadow-lg'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }
+            `}
+            style={testCategory.trim() ? { boxShadow: "0 4px 20px rgba(196,30,58,0.35)" } : {}}
+          >
+            Generate Test Questions
+          </button>
+
+          {/* Back to Normal Mode */}
+          {playerNames.length > 0 && (
+            <button
+              onClick={() => setQuickTestMode(false)}
+              className="mt-4 w-full py-3 font-body text-[16px] text-[#52796F] hover:text-[#165B33] transition-colors"
+            >
+              ← Back to Normal Setup
+            </button>
+          )}
+          
+          {/* Back to Home */}
+          <button
+            onClick={() => router.push('/king-of-hearts')}
+            className="mt-2 w-full py-3 font-body text-[14px] text-[#52796F]/70 hover:text-[#52796F] transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
       </main>
     );
   }
@@ -322,6 +501,14 @@ function KingOfHeartsSetupContent() {
   // ═══════════════════════════════════════════════════════════
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
+      {/* Quick Test Mode Button - Top Right */}
+      <button
+        onClick={() => setQuickTestMode(true)}
+        className="absolute top-4 right-4 px-3 py-2 bg-[#CD7F32] text-white font-body text-[12px] font-bold rounded-lg hover:bg-[#B8722D] transition-colors"
+      >
+        🧪 Quick Test
+      </button>
+
       <div className="flex flex-col items-center w-full max-w-[500px]">
         {/* Progress indicator */}
         <p className="font-body text-[13px] text-[#52796F] uppercase tracking-wider">

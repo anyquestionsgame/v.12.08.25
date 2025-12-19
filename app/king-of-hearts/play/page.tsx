@@ -380,11 +380,12 @@ export default function KingOfHeartsPlay() {
   };
 
   const getFallbackQuestions = (category: string): TriviaQuestion[] => {
+    // Fallback: Expert asks the question verbally when AI fails
     const fallbackData = [
-      { difficulty: 100, question: `what's something basic everyone knows about ${category}?`, range: `No tricks here - just say something.` },
-      { difficulty: 200, question: `what's a fact about ${category} that casual fans would know?`, range: `We're being generous - ballpark is fine.` },
-      { difficulty: 300, question: `what's something only dedicated ${category} fans would know?`, range: `We'll give you some wiggle room.` },
-      { difficulty: 400, question: `what's an obscure trivia fact about ${category}?`, range: `This is the big one - be precise.` },
+      { difficulty: 100, question: `the expert will ask you an easy question about ${category}...`, range: `Something anyone who's heard of ${category} would know.` },
+      { difficulty: 200, question: `the expert will ask you a medium question about ${category}...`, range: `Something a casual fan would probably know.` },
+      { difficulty: 300, question: `the expert will ask you a harder question about ${category}...`, range: `This one's for dedicated fans.` },
+      { difficulty: 400, question: `the expert will ask you an expert-level question about ${category}...`, range: `Only true experts would know this.` },
     ];
     
     return fallbackData.map(({ difficulty, question, range }) => ({
@@ -394,8 +395,8 @@ export default function KingOfHeartsPlay() {
       questionText: question,
       rangeText: range,
       answer: {
-        display: "Ask the group to decide!",
-        acceptable: ["any reasonable answer", "group consensus"]
+        display: "(Expert asks the question verbally)",
+        acceptable: ["expert question", "verbal question"]
       }
     }));
   };

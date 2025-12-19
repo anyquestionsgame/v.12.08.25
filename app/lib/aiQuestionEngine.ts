@@ -57,35 +57,62 @@ export async function generateAdjacentCategoryName(
   console.log(`[AI Engine] Generating adjacent category name for: ${category}`);
 
   try {
-    const systemPrompt = `You generate creative, adjacent category names for trivia following the ANY QUESTIONS voice.
+    const systemPrompt = `You generate fun but CLEAR category names for trivia.
 
-RULES:
-- NEVER use the category name directly
-- Find a 6-degrees-adjacent topic that connects
-- Should be surprising but make sense once revealed
-- Use specific brands, cultural references
-- 2-5 words maximum
-- Make people think "Wait, who knows THIS?"
-- Be irreverent but not mean
+═══════════════════════════════════════════════════════════
+CRITICAL REQUIREMENTS
+═══════════════════════════════════════════════════════════
 
-EXAMPLES:
-- Wine → "Pretentious Restaurant Moments"
-- Excel → "Office Space Meltdowns"
-- Reality TV → "Rose Ceremony Drama"
-- Cats → "3AM Zoomies Psychology"
-- Pottery → "Ghost Movie References"
-- Taylor Swift → "Breakup Playlist Essentials"
-- My Grandmother → "Embarrassing Holiday Stories"
-- LinkedIn → "Corporate Cringe Content"
-- Trader Joe's → "Bougie Grocery Behavior"
-- Coffee → "Morning Personality Disorders"
-- Dogs → "Park Bench Small Talk"
-- Cooking → "Recipe Comment Section Drama"
-- Sports → "Fantasy League Meltdowns"
-- History → "Wikipedia Rabbit Holes"
-- Music → "Aux Cord Pressure Moments"
+1. IMMEDIATELY RECOGNIZABLE - Players should instantly know what topic this relates to
+2. SLIGHTLY PLAYFUL - Add a fun angle, but keep it obvious
+3. NO OBSCURE REFERENCES - Don't require cultural knowledge to understand
+4. SIMPLE LANGUAGE - Use common words everyone knows
+5. 2-4 words maximum
 
-The category should surprise players when they learn whose expertise it is.`;
+═══════════════════════════════════════════════════════════
+GOOD EXAMPLES (Clear + Fun)
+═══════════════════════════════════════════════════════════
+
+- Italian cooking → "Pasta Night Debates"
+- Wine → "Wine Snob Territory"
+- Trucks → "Pickup Truck Culture"
+- Pottery → "Clay & Kiln Basics"
+- Excel → "Spreadsheet Wizardry"
+- Coffee → "Coffee Order Science"
+- Dogs → "Dog Park Expertise"
+- Cooking → "Home Chef Secrets"
+- History → "History Buff Trivia"
+- Music → "Music Nerd Knowledge"
+- Reality TV → "Reality TV Deep Cuts"
+- Taylor Swift → "Swiftie Knowledge"
+- Cats → "Cat Owner Facts"
+- Sports → "Sports Stats Corner"
+- Movies → "Movie Buff Trivia"
+- Trader Joe's → "Grocery Store Favorites"
+
+═══════════════════════════════════════════════════════════
+BAD EXAMPLES (Too Obscure - NEVER DO THIS)
+═══════════════════════════════════════════════════════════
+
+❌ "Nonna's Kitchen Wars" - Who is nonna? Too clever
+❌ "Terroir Tears" - Way too poetic/vague
+❌ "Dually Duels" - Too niche, requires truck knowledge
+❌ "Bisque Mysteries" - Obscure pottery term
+❌ "Office Space Meltdowns" - Movie reference not everyone gets
+❌ "3AM Zoomies Psychology" - Too quirky
+❌ "Ghost Movie References" - Obscure film reference
+❌ "Aux Cord Pressure Moments" - Too abstract
+
+═══════════════════════════════════════════════════════════
+THE TEST
+═══════════════════════════════════════════════════════════
+
+Ask: "Would someone with ZERO knowledge of this topic understand this category name?"
+If NO → it's too obscure, try again
+If YES → good!
+
+The category name should make players think "oh yeah, that makes sense" NOT "what does that mean?"
+Keep it simple. Keep it clear. Make it slightly fun.`;
 
     const userPrompt = `Generate ONE adjacent category name for: "${category}"
 Return ONLY the category name, nothing else. No quotes, no explanation.`;
@@ -96,7 +123,7 @@ Return ONLY the category name, nothing else. No quotes, no explanation.`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.9, // High creativity
+      temperature: 0.7, // Moderate creativity - clearer results
       max_tokens: 50,
     });
 
@@ -144,103 +171,112 @@ export async function generateQuestions(
     // OPENAI PROMPTS
     // ═══════════════════════════════════════════════════════════
 
-    const systemPrompt = `You are a trivia question writer for "King of Hearts" by ANY QUESTIONS.
+    const systemPrompt = `You are a trivia question writer. Generate DIRECT FACTUAL QUESTIONS only.
+
+╔═══════════════════════════════════════════════════════════╗
+║  CRITICAL FORMAT REQUIREMENT - READ THIS FIRST            ║
+╚═══════════════════════════════════════════════════════════╝
+
+You must ask DIRECT FACTUAL QUESTIONS, not meta-questions.
+
+❌ WRONG - META-QUESTIONS (DO NOT GENERATE THESE):
+- "What's an obscure fact about cooking?"
+- "Name something only experts know about wine"
+- "Tell me an expert-level detail about trucks"
+- "What would a cooking expert know?"
+- "Share a deep-cut fact about pottery"
+- "What's something interesting about X?"
+- "What's a fact that requires expertise?"
+
+✅ CORRECT - DIRECT TRIVIA QUESTIONS (ALWAYS USE THIS FORMAT):
+- "At what temperature does the Maillard reaction occur?" → "300-500°F"
+- "Which Italian region produces Barolo wine?" → "Piedmont"
+- "What's the payload capacity of a 2024 Ford F-150?" → "3,250 lbs"
+- "What is the term for leather-hard clay?" → "Greenware"
+- "What year was the first iPhone released?" → "2007"
+- "Who directed Pulp Fiction?" → "Quentin Tarantino"
+
+THE QUESTION MUST:
+1. Ask about ONE specific fact
+2. Have ONE correct answer (a fact, number, name, or date)
+3. Test if the player KNOWS this specific fact
+4. NOT ask the player to generate/name/share/tell a fact
+
+BANNED PHRASES - NEVER START A QUESTION WITH:
+- "What's a fact about..."
+- "Name something..."
+- "Tell me..."
+- "Share a..."
+- "What would an expert know..."
+- "What's something interesting..."
+- "What's an obscure fact..."
+
+REQUIRED QUESTION STARTERS:
+- "What is..." / "What was..."
+- "Which..." / "Who..."
+- "How many..." / "How much..."
+- "What year..." / "In what year..."
+- "What temperature..." / "At what..."
+- "Where is..." / "Where was..."
 
 ═══════════════════════════════════════════════════════════
-CRITICAL RULE #1: FACTUAL TRIVIA ONLY
+EXAMPLES BY CATEGORY
 ═══════════════════════════════════════════════════════════
 
-You MUST generate FACTUAL TRIVIA QUESTIONS with SPECIFIC, VERIFIABLE ANSWERS.
+COOKING:
+❌ WRONG: "What's something a chef would know about cooking?"
+✅ RIGHT: "What temperature does water boil at sea level?" → "212°F / 100°C"
 
-NEVER GENERATE THESE (WILL BE REJECTED):
-❌ "What comes to mind when you think of X?"
-❌ "What's your opinion on X?"
-❌ "Describe something about X"
-❌ "What do you associate with X?"
-❌ "What's something interesting about X?"
-❌ "What's a fact about X that experts know?" ← THIS IS A META-QUESTION
-❌ "Name something an expert would know about X" ← THIS IS A META-QUESTION
-❌ "What would someone who knows X tell you?" ← THIS IS A META-QUESTION
-❌ Answers like "any reasonable answer" or "varies" or "depends" or "group decides"
+WINE:
+❌ WRONG: "Name an expert-level wine fact"
+✅ RIGHT: "Which grape is used to make Champagne's base wine?" → "Chardonnay, Pinot Noir, or Pinot Meunier"
 
-CRITICAL - NO META-QUESTIONS:
-A meta-question asks the player to GENERATE a fact.
-A real trivia question tests if the player KNOWS a specific fact.
+TRUCKS:
+❌ WRONG: "Tell me something only truck experts know"
+✅ RIGHT: "What year did Ford switch the F-150 to an aluminum body?" → "2015"
 
-META-QUESTION (WRONG): "What's a fact about trucks that requires expertise?"
-REAL TRIVIA (CORRECT): "What year did Ford introduce the F-150?"
-
-ALWAYS GENERATE DIRECT TRIVIA QUESTIONS:
-✅ "What year did X happen?" → "1985"
-✅ "Who invented X?" → "Thomas Edison"
-✅ "What company makes X?" → "Ford"
-✅ "How many X are there?" → "47"
-✅ "What is the name of X?" → "Specific Name"
-✅ "What temperature is needed for X?" → "1200°C"
-✅ Answers that are OBJECTIVELY CORRECT OR INCORRECT
-
-EXAMPLE - CATEGORY: "Trucks"
-BAD (meta-question): "What's something an expert would know about trucks?" 
-     ← This asks player to generate facts, not answer trivia
-
-GOOD (direct trivia): "What's the best-selling truck in America?"
-     Answer: "Ford F-150" ← Tests if player knows THIS specific fact
-
-BAD (meta-question): "Name a technical spec about the F-150"
-     ← Player has to come up with a fact
-
-GOOD (direct trivia): "What year did Ford switch the F-150 to an aluminum body?"
-      Answer: "2015" ← Tests if player knows THIS specific fact
+POTTERY:
+❌ WRONG: "Share a deep-cut pottery fact"
+✅ RIGHT: "What temperature is required to fire stoneware?" → "2200-2400°F"
 
 ═══════════════════════════════════════════════════════════
-QUESTION FORMAT
+QUESTION DISPLAY FORMAT
 ═══════════════════════════════════════════════════════════
 
 - Questions displayed as: "[Player Name], [your question text]"
-- DO NOT include the player name in your question text
+- DO NOT include the player name - we add it
 - Start directly with the question (lowercase is fine)
-- All questions must have a SINGLE CORRECT ANSWER or small set of correct answers
 
 ═══════════════════════════════════════════════════════════
 RANGE TEXT FORMAT
 ═══════════════════════════════════════════════════════════
 
 - Displayed as: "What's your best guess? [your range text]"
-- For numbers: specify acceptable range ("within 5 years", "within 1000 lbs")
-- For facts: give a helpful hint about the answer format
-- Conversational, slightly sarcastic but friendly
-
-GOOD RANGE TEXT:
-- "We'll give you within 5 years on this one"
-- "It's an American company... that narrows it down"
-- "Three letters, starts with F"
-- "The number might surprise you - within 10% works"
-
-═══════════════════════════════════════════════════════════
-THE ANY QUESTIONS VOICE
-═══════════════════════════════════════════════════════════
-
-- Hyper-specific references make it fun
-- Conversational, not stuffy trivia-host style
-- Makes even obscure facts feel approachable
-- Slightly cheeky but never mean
+- For numbers: specify acceptable range ("within 5 years", "within 100 lbs")
+- For names: give a helpful hint ("It's a French region", "Think American companies")
+- Keep it conversational and slightly playful
 
 All answers MUST include acceptable variations (alternate spellings, nicknames, ranges for numbers).`;
 
-    const userPrompt = `Generate 4 FACTUAL TRIVIA questions about "${category}" with STRICT difficulty scaling.
+    const userPrompt = `Generate 4 DIRECT FACTUAL TRIVIA questions about "${category}".
 The current player is ${playerName}. The expert who can steal is ${expertName}.
 
-═══════════════════════════════════════════════════════════
-ABSOLUTE REQUIREMENT: FACTUAL QUESTIONS ONLY
-═══════════════════════════════════════════════════════════
+╔═══════════════════════════════════════════════════════════╗
+║  REMINDER: NO META-QUESTIONS                              ║
+╚═══════════════════════════════════════════════════════════╝
 
-Every question MUST be:
-- A verifiable fact with a specific answer
-- Google-able and provable
-- NOT an opinion, feeling, or subjective experience
+❌ DO NOT WRITE: "What's a fact about ${category}?"
+❌ DO NOT WRITE: "Name something an expert would know about ${category}"
+❌ DO NOT WRITE: "What's something interesting about ${category}?"
 
-If ${expertName} is the expert on ${category}, they should be able to STEAL
-the hard questions by knowing facts that ${playerName} doesn't.
+✅ WRITE QUESTIONS LIKE:
+- "What is [specific thing about ${category}]?"
+- "Which [specific thing] is associated with ${category}?"
+- "How many/much [specific measurement about ${category}]?"
+- "What year did [specific event about ${category}] happen?"
+
+Each question must have ONE specific, factual answer.
+If ${expertName} is the expert, they should know the HARD questions that ${playerName} might not.
 
 ═══════════════════════════════════════════════════════════
 DIFFICULTY CALIBRATION (READ CAREFULLY)
@@ -340,7 +376,12 @@ Return ONLY valid JSON:
   ]
 }
 
-Generate FACTUAL questions with SPECIFIC answers. RESPECT THE DIFFICULTY CURVE!`;
+FINAL CHECK before outputting:
+- Does each question ask about ONE specific fact? ✓
+- Does each question have ONE correct answer? ✓
+- Did you avoid "what's a fact about..." or "name something..."? ✓
+
+Generate DIRECT trivia questions with SPECIFIC answers. NO META-QUESTIONS!`;
 
     // ═══════════════════════════════════════════════════════════
     // API CALL
