@@ -412,10 +412,66 @@ Generate DIRECT trivia questions with SPECIFIC answers. NO META-QUESTIONS!`;
     // API CALL
     // ═══════════════════════════════════════════════════════════
 
+    // Few-shot example to show the AI exactly what format we want
+    const fewShotExample = {
+      questions: [
+        {
+          category: "Wine",
+          difficulty: 100,
+          questionText: "which country produces Champagne?",
+          rangeText: "Think major wine regions - this is wine 101.",
+          answer: {
+            display: "France",
+            acceptable: ["France", "French"]
+          }
+        },
+        {
+          category: "Wine",
+          difficulty: 200,
+          questionText: "what grape variety is used to make Pinot Grigio?",
+          rangeText: "It's in the name... kind of.",
+          answer: {
+            display: "Pinot Gris",
+            acceptable: ["Pinot Gris", "Pinot Grigio", "the Pinot Gris grape"]
+          }
+        },
+        {
+          category: "Wine",
+          difficulty: 300,
+          questionText: "what is the minimum aging requirement for non-vintage Champagne?",
+          rangeText: "We'll accept within 3 months.",
+          answer: {
+            display: "15 months",
+            acceptable: ["15 months", "15 mo", "12-18 months", "about 15 months"]
+          }
+        },
+        {
+          category: "Wine",
+          difficulty: 400,
+          questionText: "what is the maximum permitted yield in liters per hectare for Burgundy Grand Cru vineyards?",
+          rangeText: "This is deep wine nerd territory. Within 500 liters.",
+          answer: {
+            display: "3,500 liters",
+            acceptable: ["3500", "3,500", "3500 liters", "35 hectoliters"]
+          }
+        }
+      ]
+    };
+
     const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o', // More expensive but better instruction following
       messages: [
         { role: 'system', content: systemPrompt },
+        // Few-shot example: show the AI a perfect response
+        { 
+          role: 'user', 
+          content: 'Generate 4 DIRECT FACTUAL TRIVIA questions about "Wine". The current player is Sarah. The expert who can steal is Marcus.'
+        },
+        {
+          role: 'assistant',
+          content: JSON.stringify(fewShotExample)
+        },
+        // Now the actual request
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
