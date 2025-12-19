@@ -413,13 +413,13 @@ Generate DIRECT trivia questions with SPECIFIC answers. NO META-QUESTIONS!`;
     // ═══════════════════════════════════════════════════════════
 
     const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini', // Cheap and fast
+      model: 'gpt-4o', // More expensive but better instruction following
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.7, // Slightly lower for more factual responses
+      temperature: 0.5, // Lower for more consistent, instruction-following responses
       max_tokens: 2000,
     });
 
