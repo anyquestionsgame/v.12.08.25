@@ -10,7 +10,8 @@ import {
   saveSession, 
   isSessionComplete, 
   GAME_ROUTES,
-  getCurrentGame
+  getCurrentGame,
+  GameSession
 } from '@/app/lib/gameOrchestrator';
 import Loading from '@/components/Loading';
 import AnimatedScore from '@/components/AnimatedScore';
@@ -36,7 +37,7 @@ interface Answer {
 
 type GamePhase = 'transition' | 'handoff' | 'intro' | 'collecting' | 'picking' | 'reveal' | 'final';
 
-export default function Play() {
+function PlayContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
   
   // Game state
@@ -64,61 +65,44 @@ export default function Play() {
   const [usedPromptCategories, setUsedPromptCategories] = useState<string[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
 
-  // Load player data and session
+  // Load player data from session
   useEffect(() => {
     try {
-      const session = loadSession();
-      if (!session) {
-        console.error('No session found - redirecting to games');
-        router.push('/games');
+      const currentSavagery = initialSession.savageryLevel || 'standard';
+      setSavageryLevel(currentSavagery);
+      
+      // Convert session players to PlayerData format
+      const formattedPlayers: PlayerData[] = initialSession.players.map(p => ({
+        name: p.name || 'Unknown',
+        goodAt: p.expertise || 'General Knowledge',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      if (formattedPlayers.length === 0) {
+        console.error('No valid players found');
+        router.push('/setup');
         return;
       }
       
-      const currentSavagery = session.savageryLevel || 'standard';
-      setSavageryLevel(currentSavagery);
+      setPlayers(formattedPlayers);
+      setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
       
-      // Try both player storage keys
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        const playerData: PlayerData[] = JSON.parse(storedPlayers);
-        
-        // Handle both data formats
-        const formattedPlayers = playerData.map((p: any) => ({
-          name: p.name || 'Unknown',
-          goodAt: p.goodAt || p.expertise || 'General Knowledge',
-          ratherDie: p.ratherDie || p.ratherDieThan || ''
-        }));
-        
-        if (formattedPlayers.length === 0) {
-          console.error('No valid players found');
-          router.push('/setup');
-          return;
-        }
-        
-        setPlayers(formattedPlayers);
-        setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
-        
-        // Generate first prompt using essence engine
-        // Collect ALL players' "rather die than" preferences for filtering
-        const allRatherDieThan = formattedPlayers.map(p => p.ratherDie).filter(Boolean);
-        const firstPlayer = formattedPlayers[0];
-        const { prompt, category } = generateEssencePrompt(
-          firstPlayer.name,
-          currentSavagery,
-          allRatherDieThan,
-          []
-        );
-        setCurrentPrompt(prompt);
-        setUsedPromptCategories([category]);
-      } else {
-        console.error('No players found - redirecting to setup');
-        router.push('/setup');
-      }
+      // Generate first prompt using essence engine
+      const allRatherDieThan = formattedPlayers.map(p => p.ratherDie).filter(Boolean);
+      const firstPlayer = formattedPlayers[0];
+      const { prompt, category } = generateEssencePrompt(
+        firstPlayer.name,
+        currentSavagery,
+        allRatherDieThan,
+        []
+      );
+      setCurrentPrompt(prompt);
+      setUsedPromptCategories([category]);
     } catch (error) {
       console.error('Error loading game data:', error);
       router.push('/setup');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   // Timer countdown
   useEffect(() => {
@@ -706,4 +690,12 @@ export default function Play() {
   }
 
   return null;
+}
+
+export default function Play() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <PlayContent session={session} />}
+    </SessionGuard>
+  );
 }

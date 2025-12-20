@@ -21,7 +21,8 @@ import {
   saveSession, 
   isSessionComplete, 
   GAME_ROUTES,
-  getCurrentGame
+  getCurrentGame,
+  GameSession
 } from '@/app/lib/gameOrchestrator';
 import { SteampunkLayout, BrassButton, GameCard, GhostButton, Gear, GaugePanel, HolidayGarland } from '@/components/ui/qtc-components';
 import AnimatedScore from '@/components/AnimatedScore';
@@ -39,7 +40,7 @@ interface PlayerScore {
 
 type GamePhase = 'transition' | 'handoff' | 'announce' | 'clue' | 'perform' | 'success' | 'timeout' | 'final';
 
-export default function Performance() {
+function PerformanceContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
   
   // Game state
@@ -63,51 +64,36 @@ export default function Performance() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const startTimeRef = useRef<number | null>(null);
 
-  // Load player data and session
+  // Load player data from session
   useEffect(() => {
     try {
-      const session = loadSession();
-      if (!session) {
-        console.error('No session found - redirecting to games');
-        router.push('/games');
+      const currentSavagery = initialSession.savageryLevel || 'standard';
+      setSavageryLevel(currentSavagery);
+      
+      // Convert session players to PlayerData format
+      const formattedPlayers: PlayerData[] = initialSession.players.map(p => ({
+        name: p.name || 'Unknown',
+        goodAt: p.expertise || 'General Knowledge',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      if (formattedPlayers.length === 0) {
+        console.error('No valid players found');
+        router.push('/setup');
         return;
       }
       
-      const currentSavagery = session.savageryLevel || 'standard';
-      setSavageryLevel(currentSavagery);
+      setPlayers(formattedPlayers);
+      setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
       
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        const playerData: PlayerData[] = JSON.parse(storedPlayers);
-        
-        // Handle both data formats
-        const formattedPlayers = playerData.map((p: any) => ({
-          name: p.name || 'Unknown',
-          goodAt: p.goodAt || p.expertise || 'General Knowledge',
-          ratherDie: p.ratherDie || p.ratherDieThan || ''
-        }));
-        
-        if (formattedPlayers.length === 0) {
-          console.error('No valid players found');
-          router.push('/setup');
-          return;
-        }
-        
-        setPlayers(formattedPlayers);
-        setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
-        
-        // Set first type
-        const type = getNextPerformanceType(1);
-        setCurrentType(type);
-      } else {
-        console.error('No players found - redirecting to setup');
-        router.push('/setup');
-      }
+      // Set first type
+      const type = getNextPerformanceType(1);
+      setCurrentType(type);
     } catch (error) {
       console.error('Error loading game data:', error);
       router.push('/setup');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   // Timer countdown
   useEffect(() => {
@@ -753,5 +739,13 @@ export default function Performance() {
   }
 
   return null;
+}
+
+export default function Performance() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <PerformanceContent session={session} />}
+    </SessionGuard>
+  );
 }
 

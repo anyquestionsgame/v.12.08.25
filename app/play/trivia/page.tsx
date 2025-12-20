@@ -15,7 +15,8 @@ import {
   saveSession, 
   isSessionComplete, 
   GAME_ROUTES,
-  getCurrentGame
+  getCurrentGame,
+  GameSession
 } from '@/app/lib/gameOrchestrator';
 import { SteampunkLayout, BrassButton, BrassInput, GameCard, GhostButton, Gear, GaugePanel, HolidayGarland } from '@/components/ui/qtc-components';
 import AnimatedScore from '@/components/AnimatedScore';
@@ -34,7 +35,7 @@ interface PlayerScore {
 type GamePhase = 'transition' | 'handoff' | 'selection' | 'question' | 'answer' | 'steal' | 'score' | 'final';
 type Difficulty = 'easy' | 'hard';
 
-export default function Trivia() {
+function TriviaContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
   
   // Game state
@@ -57,55 +58,40 @@ export default function Trivia() {
   const [timer, setTimer] = useState(30);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // Load player data and session
+  // Load player data from session
   useEffect(() => {
     try {
-      const session = loadSession();
-      if (!session) {
-        console.error('No session found - redirecting to games');
-        router.push('/games');
+      const location = initialSession.location;
+      
+      // Convert session players to PlayerData format
+      const formattedPlayers: PlayerData[] = initialSession.players.map(p => ({
+        name: p.name || 'Unknown',
+        goodAt: p.expertise || 'General Knowledge',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      if (formattedPlayers.length === 0) {
+        console.error('No valid players found');
+        router.push('/setup');
         return;
       }
       
-      const location = session.location;
+      setPlayers(formattedPlayers);
+      setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
       
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        const playerData: PlayerData[] = JSON.parse(storedPlayers);
-        
-        // Handle both data formats
-        const formattedPlayers = playerData.map((p: any) => ({
-          name: p.name || 'Unknown',
-          goodAt: p.goodAt || p.expertise || 'General Knowledge',
-          ratherDie: p.ratherDie || p.ratherDieThan || ''
-        }));
-        
-        if (formattedPlayers.length === 0) {
-          console.error('No valid players found');
-          router.push('/setup');
-          return;
-        }
-        
-        setPlayers(formattedPlayers);
-        setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
-        
-        // Generate first card
-        const triviaPlayers = formattedPlayers.map(p => ({
-          name: p.name,
-          expertise: p.goodAt,
-          ratherDieThan: p.ratherDie
-        }));
-        const card = generateTriviaCard(1, triviaPlayers, location);
-        setCurrentCard(card);
-      } else {
-        console.error('No players found - redirecting to setup');
-        router.push('/setup');
-      }
+      // Generate first card
+      const triviaPlayers = formattedPlayers.map(p => ({
+        name: p.name,
+        expertise: p.goodAt,
+        ratherDieThan: p.ratherDie
+      }));
+      const card = generateTriviaCard(1, triviaPlayers, location);
+      setCurrentCard(card);
     } catch (error) {
       console.error('Error loading game data:', error);
       router.push('/setup');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   // Timer countdown
   useEffect(() => {
@@ -852,5 +838,13 @@ export default function Trivia() {
   }
 
   return null;
+}
+
+export default function Trivia() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <TriviaContent session={session} />}
+    </SessionGuard>
+  );
 }
 

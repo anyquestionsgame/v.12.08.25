@@ -15,7 +15,8 @@ import {
   saveSession, 
   isSessionComplete, 
   GAME_ROUTES,
-  getCurrentGame
+  getCurrentGame,
+  GameSession
 } from '@/app/lib/gameOrchestrator';
 import { SteampunkLayout, BrassButton, GameCard, GhostButton, Gear, GaugePanel, HolidayGarland } from '@/components/ui/qtc-components';
 import AnimatedScore from '@/components/AnimatedScore';
@@ -33,7 +34,7 @@ interface PlayerScore {
 
 type GamePhase = 'transition' | 'handoff' | 'intro' | 'prediction' | 'countdown' | 'results' | 'final';
 
-export default function MostLikelyTo() {
+function MostLikelyToContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
   
   // Game state
@@ -53,53 +54,38 @@ export default function MostLikelyTo() {
   const [voteResults, setVoteResults] = useState<VoteResult[]>([]);
   const [winners, setWinners] = useState<string[]>([]);
 
-  // Load player data and session
+  // Load player data from session
   useEffect(() => {
     try {
-      const session = loadSession();
-      if (!session) {
-        console.error('No session found - redirecting to games');
-        router.push('/games');
+      const currentSavagery = initialSession.savageryLevel || 'standard';
+      setSavageryLevel(currentSavagery);
+      
+      // Convert session players to PlayerData format
+      const formattedPlayers: PlayerData[] = initialSession.players.map(p => ({
+        name: p.name || 'Unknown',
+        goodAt: p.expertise || 'General Knowledge',
+        ratherDie: p.ratherDieThan || ''
+      }));
+      
+      if (formattedPlayers.length === 0) {
+        console.error('No valid players found');
+        router.push('/setup');
         return;
       }
       
-      const currentSavagery = session.savageryLevel || 'standard';
-      setSavageryLevel(currentSavagery);
+      setPlayers(formattedPlayers);
+      setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
       
-      const storedPlayers = localStorage.getItem('players') || localStorage.getItem('qtc_players');
-      if (storedPlayers) {
-        const playerData: PlayerData[] = JSON.parse(storedPlayers);
-        
-        // Handle both data formats
-        const formattedPlayers = playerData.map((p: any) => ({
-          name: p.name || 'Unknown',
-          goodAt: p.goodAt || p.expertise || 'General Knowledge',
-          ratherDie: p.ratherDie || p.ratherDieThan || ''
-        }));
-        
-        if (formattedPlayers.length === 0) {
-          console.error('No valid players found');
-          router.push('/setup');
-          return;
-        }
-        
-        setPlayers(formattedPlayers);
-        setScores(formattedPlayers.map(p => ({ name: p.name, score: 0 })));
-        
-        // Generate first prompt
-        const allRatherDieThan = formattedPlayers.map(p => p.ratherDie).filter(Boolean);
-        const prompt = generateMostLikelyToPrompt(currentSavagery, allRatherDieThan, []);
-        setCurrentPrompt(prompt);
-        setUsedPrompts([prompt]);
-      } else {
-        console.error('No players found - redirecting to setup');
-        router.push('/setup');
-      }
+      // Generate first prompt
+      const allRatherDieThan = formattedPlayers.map(p => p.ratherDie).filter(Boolean);
+      const prompt = generateMostLikelyToPrompt(currentSavagery, allRatherDieThan, []);
+      setCurrentPrompt(prompt);
+      setUsedPrompts([prompt]);
     } catch (error) {
       console.error('Error loading game data:', error);
       router.push('/setup');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   // Countdown effect
   useEffect(() => {

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  loadSession,
   clearSession,
   getScoreboard,
   getWinners,
@@ -17,9 +16,8 @@ import Loading from '@/components/Loading';
 import Confetti from '@/components/Confetti';
 import { SteampunkLayout, BrassButton, GhostButton, GameCard, HolidayGarland, Gear } from '@/components/ui/qtc-components';
 
-export default function FinalScores() {
+function FinalScoresContent({ session: initialSession }: { session: GameSession }) {
   const router = useRouter();
-  const [session, setSession] = useState<GameSession | null>(null);
   const [scoreboard, setScoreboard] = useState<Player[]>([]);
   const [winners, setWinners] = useState<Player[]>([]);
   const [showGameBreakdown, setShowGameBreakdown] = useState(false);
@@ -28,38 +26,31 @@ export default function FinalScores() {
 
   useEffect(() => {
     try {
-      const loadedSession = loadSession();
       const testingMode = localStorage.getItem('qtc_testing_mode') === 'true';
       setIsTestingMode(testingMode);
       
-      if (loadedSession) {
-        setSession(loadedSession);
-        const scoreboardData = getScoreboard(loadedSession);
-        const winnersData = getWinners(loadedSession);
-        
-        if (scoreboardData.length === 0) {
-          console.error('No scoreboard data - redirecting to home');
-          router.push('/');
-          return;
-        }
-        
-        setScoreboard(scoreboardData);
-        setWinners(winnersData);
-        // Show confetti for winners
-        if (winnersData.length > 0) {
-          setShowConfetti(true);
-          // Hide confetti after 3 seconds
-          setTimeout(() => setShowConfetti(false), 3000);
-        }
-      } else {
-        console.error('No session found - redirecting to home');
+      const scoreboardData = getScoreboard(initialSession);
+      const winnersData = getWinners(initialSession);
+      
+      if (scoreboardData.length === 0) {
+        console.error('No scoreboard data - redirecting to home');
         router.push('/');
+        return;
+      }
+      
+      setScoreboard(scoreboardData);
+      setWinners(winnersData);
+      // Show confetti for winners
+      if (winnersData.length > 0) {
+        setShowConfetti(true);
+        // Hide confetti after 3 seconds
+        setTimeout(() => setShowConfetti(false), 3000);
       }
     } catch (error) {
       console.error('Error loading final scores:', error);
       router.push('/');
     }
-  }, [router]);
+  }, [initialSession, router]);
 
   const handlePlayAgain = () => {
     try {
@@ -87,8 +78,8 @@ export default function FinalScores() {
   };
 
   const getGameScoreForPlayer = (gameType: GameType, playerName: string): number => {
-    if (!session?.gameScores[gameType]) return 0;
-    return session.gameScores[gameType][playerName] || 0;
+    if (!initialSession?.gameScores[gameType]) return 0;
+    return initialSession.gameScores[gameType][playerName] || 0;
   };
 
   if (!session) {
@@ -233,6 +224,14 @@ export default function FinalScores() {
         </div>
       </main>
     </SteampunkLayout>
+  );
+}
+
+export default function FinalScores() {
+  return (
+    <SessionGuard redirectOnInvalid={true}>
+      {(session) => <FinalScoresContent session={session} />}
+    </SessionGuard>
   );
 }
 
