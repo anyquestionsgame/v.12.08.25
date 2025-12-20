@@ -17,6 +17,8 @@ import {
   GAME_ROUTES,
   getCurrentGame
 } from '@/app/lib/gameOrchestrator';
+import { SteampunkLayout, BrassButton, GameCard, GhostButton, Gear, GaugePanel, HolidayGarland } from '@/components/ui/qtc-components';
+import AnimatedScore from '@/components/AnimatedScore';
 
 interface PlayerData {
   name: string;
@@ -256,25 +258,29 @@ export default function MostLikelyTo() {
 
   if (players.length === 0) {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
-        <p className="font-body text-[16px] text-[#9B9388]">Loading...</p>
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     );
   }
 
   // TRANSITION SCREEN
   if (phase === 'transition') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
-        <div className="text-center animate-fadeInScale">
-          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
-            JUDGMENT TIME
-          </h1>
-          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
-            Democracy, but make it chaotic
-          </p>
-        </div>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex flex-col items-center justify-center">
+          <div className="text-center animate-fadeInScale">
+            <h1 className="font-heading text-[48px] font-bold text-qtc-brass-light">
+              JUDGMENT TIME
+            </h1>
+            <p className="mt-4 font-body text-[16px] text-qtc-copper">
+              Democracy, but make it chaotic
+            </p>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -282,203 +288,213 @@ export default function MostLikelyTo() {
   if (phase === 'handoff') {
     const nextReader = players[readerIndex];
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <div className="text-center animate-fadeInScale">
-          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
-            {nextReader?.name.toUpperCase()} IS UP NEXT
-          </h1>
-          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
-            Pass the phone now
-          </p>
-          <button
-            onClick={startHandoff}
-            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-          >
-            READY
-          </button>
-        </div>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="text-center animate-fadeInScale">
+            <h1 className="font-heading text-[48px] font-bold text-qtc-brass-light">
+              {nextReader?.name.toUpperCase()} IS UP NEXT
+            </h1>
+            <p className="mt-4 font-body text-[16px] text-qtc-copper">
+              Pass the phone now
+            </p>
+            <BrassButton
+              onClick={startHandoff}
+              variant="holiday"
+              size="lg"
+              className="mt-12"
+            >
+              READY
+            </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // SCREEN 1 - Round Intro
   if (phase === 'intro') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#D4A574] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        {/* Top bar with scores */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
-          <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
-            Round {currentRound} of {totalRounds}
-          </p>
-          <div className="flex gap-4">
-            {scores.map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="font-body text-[11px] text-[#9B9388]">{s.name}</p>
-                <p className="font-heading text-[16px] font-bold text-[#D4A574]">{s.score}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <p className="font-body text-[13px] text-[#9B9388] uppercase tracking-wider">
-            Most Likely To
-          </p>
-          
-          <div className="mt-8 p-6 bg-[#2D2B28] rounded-xl max-w-[360px]">
-            <p className="font-heading text-[24px] font-normal text-[#F0EEE9] text-center leading-relaxed">
-              &ldquo;{currentPrompt}&rdquo;
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-brass-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-black">
+              {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
             </p>
           </div>
-          
-          <p className="mt-8 font-body text-[16px] text-[#9B9388] text-center max-w-[300px]">
-            Vote for who fits. Argue about it later.
-          </p>
-          
-          <button
-            onClick={startRound}
-            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-          >
-            MAKE MY PREDICTION
-          </button>
-        </div>
-      </main>
+          {/* Top bar with scores */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-qtc-brass/30 bg-qtc-charcoal/80">
+            <p className="font-mono text-[12px] text-qtc-copper uppercase tracking-wider">
+              Round {currentRound} of {totalRounds}
+            </p>
+            <div className="flex gap-4">
+              {scores.map((s, i) => (
+                <GaugePanel
+                  key={i}
+                  label={s.name}
+                  value={s.score}
+                  unit="pts"
+                  className="scale-75"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <p className="font-mono text-[13px] text-qtc-copper uppercase tracking-wider">
+              Most Likely To
+            </p>
+            
+            <GameCard variant="brass" className="mt-8 max-w-[360px]">
+              <p className="font-heading text-[24px] font-normal text-qtc-brass-light text-center leading-relaxed">
+                &ldquo;{currentPrompt}&rdquo;
+              </p>
+            </GameCard>
+            
+            <p className="mt-8 font-body text-[16px] text-qtc-copper text-center max-w-[300px]">
+              Vote for who fits. Argue about it later.
+            </p>
+            
+            <BrassButton
+              onClick={startRound}
+              variant="holiday"
+              size="lg"
+              className="mt-12"
+            >
+              MAKE MY PREDICTION
+            </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // SCREEN 2 - Reader Makes Prediction
   if (phase === 'prediction') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#D4A574] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        {/* Top bar */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
-          <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
-            {reader.name}&apos;s Prediction
-          </p>
-          <p className="font-body text-[12px] text-[#D4A574]">
-            Don&apos;t let anyone see!
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <h1 className="font-heading text-[28px] font-bold text-[#F0EEE9] text-center">
-            WHO WILL WIN?
-          </h1>
-          
-          <p className="mt-4 font-body text-[14px] text-[#9B9388] text-center">
-            Tap who you think will get the most votes
-          </p>
-          
-          {/* Player buttons */}
-          <div className="mt-8 w-full max-w-[400px] grid grid-cols-2 gap-4">
-            {players.map((player, index) => (
-              <button
-                key={index}
-                onClick={() => submitPrediction(player.name)}
-                className="p-5 bg-[#2D2B28] text-[#F0EEE9] rounded-xl font-heading text-[18px] font-bold transition-all duration-150 ease-out cursor-pointer hover:bg-[#F0EEE9] hover:text-[#1F1E1C] active:scale-[0.96]"
-              >
-                {player.name}
-              </button>
-            ))}
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-brass-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-black">
+              {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
           </div>
-        </div>
-      </main>
+          {/* Top bar */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-qtc-brass/30 bg-qtc-charcoal/80">
+            <p className="font-mono text-[12px] text-qtc-copper uppercase tracking-wider">
+              {reader.name}&apos;s Prediction
+            </p>
+            <p className="font-body text-[12px] text-qtc-brass">
+              Don&apos;t let anyone see!
+            </p>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <h1 className="font-heading text-[28px] font-bold text-qtc-brass-light text-center">
+              WHO WILL WIN?
+            </h1>
+            
+            <p className="mt-4 font-body text-[14px] text-qtc-copper text-center">
+              Tap who you think will get the most votes
+            </p>
+            
+            {/* Player buttons */}
+            <div className="mt-8 w-full max-w-[400px] grid grid-cols-2 gap-4">
+              {players.map((player, index) => (
+                <button
+                  key={index}
+                  onClick={() => submitPrediction(player.name)}
+                  className="p-5 bg-qtc-charcoal text-qtc-cream rounded-xl font-heading text-[18px] font-bold transition-all duration-150 ease-out cursor-pointer hover:bg-brass-gradient hover:text-qtc-black active:scale-[0.96] border-2 border-qtc-brass/50"
+                >
+                  {player.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // SCREEN 3 - Countdown
   if (phase === 'countdown') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#D4A574] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-        {countdown > 0 ? (
-          <>
-            <p className="font-body text-[16px] text-[#9B9388] uppercase tracking-wider">
-              Everyone get ready to point...
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-brass-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-black">
+              {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
             </p>
-            
-            <p className="mt-8 font-heading text-[120px] font-bold text-[#D4A574]">
-              {countdown}
-            </p>
-            
-            <p className="mt-4 font-heading text-[24px] text-[#F0EEE9]">
-              {currentPrompt}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="font-heading text-[64px] font-bold text-[#F0EEE9]">
-              POINT NOW!
-            </p>
-            
-            <p className="mt-8 font-body text-[18px] text-[#9B9388] text-center max-w-[300px]">
-              Everyone point at who you think is most likely!
-            </p>
-            
-            <div className="mt-12 w-full max-w-[400px]">
-              <p className="font-body text-[14px] text-[#9B9388] text-center mb-4">
-                Tap each person&apos;s name for each vote they received:
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+          {countdown > 0 ? (
+            <>
+              <p className="font-body text-[16px] text-qtc-copper uppercase tracking-wider">
+                Everyone get ready to point...
               </p>
               
-              <div className="grid grid-cols-2 gap-4">
-                {players.map((player, index) => {
-                  const currentVotes = voteResults.find(v => v.playerName === player.name)?.votes || 0;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => recordVotes(player.name, 1)}
-                      className="p-4 bg-[#2D2B28] rounded-xl transition-all duration-150 ease-out cursor-pointer hover:bg-[#3D3B38] active:scale-[0.96]"
-                    >
-                      <p className="font-heading text-[18px] font-bold text-[#F0EEE9]">
-                        {player.name}
-                      </p>
-                      <p className="mt-1 font-mono text-[24px] text-[#D4A574]">
-                        {currentVotes}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="mt-8 font-heading text-[120px] font-bold text-qtc-brass">
+                {countdown}
+              </p>
               
-              <button
-                onClick={finalizeResults}
-                disabled={voteResults.length === 0}
-                className={`
-                  mt-8 w-full py-5 font-body text-lg font-bold rounded-lg cursor-pointer
-                  transition-all duration-150 ease-out select-none
-                  ${voteResults.length > 0
-                    ? 'bg-[#F0EEE9] text-[#1F1E1C] hover:opacity-90 hover:scale-[0.98] active:scale-[0.96]'
-                    : 'bg-transparent border-2 border-[#9B9388] text-[#9B9388] cursor-not-allowed'
-                  }
-                `}
-              >
-                COUNT VOTES
-              </button>
-            </div>
-          </>
-        )}
-        </div>
-      </main>
+              <p className="mt-4 font-heading text-[24px] text-qtc-cream">
+                {currentPrompt}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-heading text-[64px] font-bold text-qtc-brass-light">
+                POINT NOW!
+              </p>
+              
+              <p className="mt-8 font-body text-[18px] text-qtc-copper text-center max-w-[300px]">
+                Everyone point at who you think is most likely!
+              </p>
+              
+              <div className="mt-12 w-full max-w-[400px]">
+                <p className="font-body text-[14px] text-qtc-copper text-center mb-4">
+                  Tap each person&apos;s name for each vote they received:
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {players.map((player, index) => {
+                    const currentVotes = voteResults.find(v => v.playerName === player.name)?.votes || 0;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => recordVotes(player.name, 1)}
+                        className="p-4 bg-qtc-charcoal rounded-xl transition-all duration-150 ease-out cursor-pointer hover:bg-qtc-slate active:scale-[0.96] border-2 border-qtc-brass/50"
+                      >
+                        <p className="font-heading text-[18px] font-bold text-qtc-brass-light">
+                          {player.name}
+                        </p>
+                        <p className="mt-1 font-mono text-[24px] text-qtc-brass">
+                          {currentVotes}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <BrassButton
+                  onClick={finalizeResults}
+                  disabled={voteResults.length === 0}
+                  variant={voteResults.length > 0 ? "holiday" : "secondary"}
+                  size="lg"
+                  className="mt-8 w-full"
+                >
+                  COUNT VOTES
+                </BrassButton>
+              </div>
+            </>
+          )}
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -488,72 +504,85 @@ export default function MostLikelyTo() {
     const sortedResults = [...voteResults].sort((a, b) => b.votes - a.votes);
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#D4A574] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        {/* Top bar */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
-          <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
-            Round {currentRound} Results
-          </p>
-          <div className="flex gap-4">
-            {scores.map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="font-body text-[11px] text-[#9B9388]">{s.name}</p>
-                <p className="font-heading text-[16px] font-bold text-[#D4A574]">{s.score}</p>
-              </div>
-            ))}
+      <SteampunkLayout variant="holiday" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-holiday-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {reader?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
           </div>
-        </div>
+          {/* Top bar */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-qtc-brass/30 bg-qtc-charcoal/80">
+            <p className="font-mono text-[12px] text-qtc-copper uppercase tracking-wider">
+              Round {currentRound} Results
+            </p>
+            <div className="flex gap-4">
+              {scores.map((s, i) => (
+                <GaugePanel
+                  key={i}
+                  label={s.name}
+                  value={s.score}
+                  unit="pts"
+                  className="scale-75"
+                />
+              ))}
+            </div>
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <p className="font-body text-[13px] text-[#9B9388] uppercase tracking-wider">
-            Most votes go to...
-          </p>
-          
-          <h1 className="mt-4 font-heading text-[42px] font-bold text-[#D4A574] text-center">
-            {winners.length > 1 ? winners.join(' & ') : winners[0]}
-          </h1>
-          
-          {/* Vote breakdown */}
-          <div className="mt-8 w-full max-w-[300px] space-y-2">
-            {sortedResults.map((result, i) => (
-              <div
-                key={i}
-                className={`
-                  flex items-center justify-between p-3 rounded-lg
-                  ${winners.includes(result.playerName) ? 'bg-[#D4A574]/20' : 'bg-[#2D2B28]'}
-                `}
-              >
-                <span className="font-body text-[16px] text-[#F0EEE9]">{result.playerName}</span>
-                <span className="font-mono text-[18px] text-[#D4A574]">{result.votes} votes</span>
-              </div>
-            ))}
-          </div>
-          
-          {/* Reader prediction reveal */}
-          <div className="mt-8 p-4 bg-[#2D2B28] rounded-xl">
-            <p className="font-body text-[14px] text-[#9B9388] text-center">
-              {reader.name} predicted: <span className="text-[#F0EEE9] font-bold">{readerPrediction}</span>
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <HolidayGarland className="mb-6" />
+            
+            <p className="font-mono text-[13px] text-qtc-copper uppercase tracking-wider">
+              Most votes go to...
             </p>
-            <p className={`mt-2 font-heading text-[18px] text-center ${readerCorrect ? 'text-[#D4A574]' : 'text-[#9B9388]'}`}>
-              {readerCorrect ? `Correct! +${MOST_LIKELY_TO_SCORING.readerGuessedCorrect} points` : 'Not quite!'}
-            </p>
+            
+            <h1 className="mt-4 font-heading text-[42px] font-bold text-qtc-brass-light text-center">
+              {winners.length > 1 ? winners.join(' & ') : winners[0]}
+            </h1>
+            
+            {/* Vote breakdown */}
+            <div className="mt-8 w-full max-w-[300px] space-y-2">
+              {sortedResults.map((result, i) => (
+                <GameCard
+                  key={i}
+                  variant={winners.includes(result.playerName) ? "brass" : "dark"}
+                  className={winners.includes(result.playerName) ? 'bg-brass-gradient text-qtc-black' : ''}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`font-body text-[16px] ${winners.includes(result.playerName) ? 'text-qtc-black' : 'text-qtc-cream'}`}>
+                      {result.playerName}
+                    </span>
+                    <span className={`font-mono text-[18px] ${winners.includes(result.playerName) ? 'text-qtc-black' : 'text-qtc-brass'}`}>
+                      {result.votes} votes
+                    </span>
+                  </div>
+                </GameCard>
+              ))}
+            </div>
+            
+            {/* Reader prediction reveal */}
+            <GameCard variant="dark" className="mt-8">
+              <p className="font-body text-[14px] text-qtc-copper text-center">
+                {reader.name} predicted: <span className="text-qtc-cream font-bold">{readerPrediction}</span>
+              </p>
+              <p className={`mt-2 font-heading text-[18px] text-center ${readerCorrect ? 'text-qtc-brass' : 'text-qtc-copper'}`}>
+                {readerCorrect ? `Correct! +${MOST_LIKELY_TO_SCORING.readerGuessedCorrect} points` : 'Not quite!'}
+              </p>
+            </GameCard>
+            
+            <BrassButton
+              onClick={nextRound}
+              variant="holiday"
+              size="lg"
+              className="mt-12"
+            >
+              {currentRound >= totalRounds ? 'SEE FINAL SCORES' : 'NEXT ROUND'}
+            </BrassButton>
           </div>
-          
-          <button
-            onClick={nextRound}
-            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-          >
-            {currentRound >= totalRounds ? 'SEE FINAL SCORES' : 'NEXT ROUND'}
-          </button>
-        </div>
-      </main>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -563,55 +592,65 @@ export default function MostLikelyTo() {
     const winner = sortedScores[0];
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <p className="font-body text-[13px] text-[#9B9388] uppercase tracking-wider">
-          Game Complete
-        </p>
-        
-        <h1 className="mt-4 font-heading text-[42px] font-bold text-[#F0EEE9] text-center">
-          {winner.name.toUpperCase()} WINS!
-        </h1>
-        
-        <div className="mt-4 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
-        
-        {/* Final scoreboard */}
-        <div className="mt-10 w-full max-w-[320px] space-y-3">
-          {sortedScores.map((s, i) => (
-            <div
-              key={i}
-              className={`
-                flex items-center justify-between p-4 rounded-lg
-                ${i === 0 ? 'bg-[#D4A574] text-[#1F1E1C]' : 'bg-[#2D2B28] text-[#F0EEE9]'}
-              `}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`font-heading text-[20px] font-bold ${i === 0 ? 'text-[#1F1E1C]' : 'text-[#9B9388]'}`}>
-                  {i + 1}
-                </span>
-                <span className="font-body text-[18px] font-medium">{s.name}</span>
-              </div>
-              <span className="font-heading text-[24px] font-bold">{s.score}</span>
-            </div>
-          ))}
-        </div>
-        
-        <button
-          onClick={handleGameComplete}
-          className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-        >
-          CONTINUE
-        </button>
-        
-        <button
-          onClick={() => router.push('/')}
-          className="mt-4 px-12 py-4 bg-transparent text-[#9B9388] font-body text-[16px] font-medium cursor-pointer transition-all duration-150 ease-out hover:text-[#F0EEE9] select-none"
-        >
-          Back to Home
-        </button>
-      </main>
+      <SteampunkLayout variant="holiday">
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <HolidayGarland className="mb-6" />
+          
+          <p className="font-mono text-[13px] text-qtc-copper uppercase tracking-wider">
+            Game Complete
+          </p>
+          
+          <h1 className="mt-4 font-heading text-[42px] font-bold text-qtc-brass-light text-center">
+            {winner.name.toUpperCase()} WINS!
+          </h1>
+          
+          <div className="mt-4 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
+          
+          {/* Final scoreboard */}
+          <div className="mt-10 w-full max-w-[320px] space-y-3">
+            {sortedScores.map((s, i) => (
+              <GameCard
+                key={i}
+                variant={i === 0 ? "brass" : "dark"}
+                className={i === 0 ? 'bg-brass-gradient text-qtc-black' : ''}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={`font-heading text-[20px] font-bold ${i === 0 ? 'text-qtc-black' : 'text-qtc-copper'}`}>
+                      {i + 1}
+                    </span>
+                    <span className={`font-body text-[18px] font-medium ${i === 0 ? 'text-qtc-black' : 'text-qtc-cream'}`}>
+                      {s.name}
+                    </span>
+                  </div>
+                  <AnimatedScore 
+                    value={s.score} 
+                    className={`font-heading text-[24px] font-bold ${i === 0 ? 'text-qtc-black' : 'text-qtc-brass'}`} 
+                  />
+                </div>
+              </GameCard>
+            ))}
+          </div>
+          
+          <BrassButton
+            onClick={handleGameComplete}
+            variant="holiday"
+            size="lg"
+            className="mt-12"
+          >
+            CONTINUE
+          </BrassButton>
+          
+          <GhostButton
+            onClick={() => router.push('/')}
+            className="mt-4"
+          >
+            Back to Home
+          </GhostButton>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   return null;
 }
-

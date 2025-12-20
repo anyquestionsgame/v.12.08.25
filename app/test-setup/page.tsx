@@ -9,6 +9,7 @@ import {
   GAME_ID_MAP,
   GameType
 } from '@/app/lib/gameOrchestrator';
+import { SteampunkLayout, BrassButton, BrassInput, GameCard, GhostButton, Gear } from '@/components/ui/qtc-components';
 
 function generateTestPlayers(count: number) {
   const names = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Hank'];
@@ -101,141 +102,138 @@ export default function TestSetup() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-      {/* Exit button */}
-      <button
-        onClick={handleExitTesting}
-        className="absolute top-6 left-6 font-body text-[14px] text-[#9B9388] cursor-pointer hover:text-[#F0EEE9] transition-colors select-none"
-      >
-        ← Exit Testing Mode
-      </button>
-
-      {/* Header */}
-      <div className="flex flex-col items-center pt-16 pb-8 px-6">
-        <h1 className="font-heading text-[32px] font-bold text-[#D4A574] tracking-tight select-none">
-          TESTING MODE
-        </h1>
-        <p className="mt-2 font-body text-[14px] text-[#9B9388]">
-          Quick single-game testing
-        </p>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center px-6 pb-8 overflow-y-auto">
-        {/* Player Count */}
-        <div className="w-full max-w-[400px] mb-8">
-          <p className="font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-4 text-center">
-            Number of Test Players
-          </p>
-          <div className="flex gap-4 justify-center">
-            {[3, 4, 5, 6].map((num) => (
-              <button
-                key={num}
-                onClick={() => setPlayerCount(num)}
-                className={`
-                  w-[60px] h-[60px] rounded-lg border-2 border-[#F0EEE9]
-                  font-heading text-[24px] font-bold
-                  transition-all duration-150 ease-out
-                  hover:scale-[0.98] active:scale-[0.96]
-                  cursor-pointer select-none
-                  ${playerCount === num
-                    ? 'bg-[#F0EEE9] text-[#1F1E1C]'
-                    : 'bg-transparent text-[#F0EEE9]'
-                  }
-                `}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
-          <p className="mt-4 font-body text-[12px] text-[#9B9388] text-center">
-            Will generate: {generateTestPlayers(playerCount).map(p => p.name).join(', ')}
-          </p>
-        </div>
-
-        {/* Game Selection */}
-        <div className="w-full max-w-[400px] mb-8">
-          <p className="font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-4 text-center">
-            Game to Test
-          </p>
-          <div className="space-y-3">
-            {gameOptions.map((game) => (
-              <button
-                key={game.id}
-                onClick={() => setSelectedGame(game.type)}
-                className={`
-                  w-full py-4 px-6 rounded-lg border-2 font-heading text-[18px] font-bold
-                  transition-all duration-150 ease-out cursor-pointer
-                  hover:scale-[0.98] active:scale-[0.96] select-none
-                  ${selectedGame === game.type
-                    ? 'bg-[#F0EEE9] text-[#1F1E1C] border-[#F0EEE9]'
-                    : 'bg-transparent text-[#F0EEE9] border-[#F0EEE9] hover:bg-[#F0EEE9] hover:text-[#1F1E1C]'
-                  }
-                `}
-              >
-                {game.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Savagery Level */}
-        <div className="w-full max-w-[400px] mb-8">
-          <p className="font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-4 text-center">
-            Savagery Level
-          </p>
-          <div className="flex gap-3 justify-center">
-            {(['gentle', 'standard', 'brutal'] as const).map((level) => (
-              <button
-                key={level}
-                onClick={() => setSavageryLevel(level)}
-                className={`
-                  px-6 py-3 rounded-lg font-body text-[14px] font-bold
-                  transition-all duration-150 ease-out cursor-pointer
-                  hover:scale-[0.98] active:scale-[0.96] select-none
-                  ${savageryLevel === level
-                    ? 'bg-[#D4A574] text-[#1F1E1C]'
-                    : 'bg-transparent text-[#F0EEE9] border-2 border-[#F0EEE9] hover:bg-[#F0EEE9] hover:text-[#1F1E1C]'
-                  }
-                `}
-              >
-                {level.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Location */}
-        <div className="w-full max-w-[400px] mb-8">
-          <p className="font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-4 text-center">
-            Location (Optional)
-          </p>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Test City"
-            className="w-full h-[48px] px-4 bg-transparent border-2 border-[#F0EEE9] rounded-lg font-body text-[16px] text-[#F0EEE9] placeholder-[#9B9388] focus:outline-none focus:ring-2 focus:ring-[#F0EEE9]/30"
-          />
-        </div>
-
-        {/* Start Button */}
+    <SteampunkLayout variant="dark" showGears={true}>
+      <main className="min-h-screen flex flex-col relative">
+        {/* Exit button */}
         <button
-          onClick={handleStartTesting}
-          disabled={!selectedGame}
-          className={`
-            w-full max-w-[400px] py-5 font-body text-lg font-bold rounded-lg cursor-pointer
-            transition-all duration-150 ease-out select-none
-            ${selectedGame
-              ? 'bg-[#D4A574] text-[#1F1E1C] hover:opacity-90 hover:scale-[0.98] active:scale-[0.96]'
-              : 'bg-transparent border-2 border-[#9B9388] text-[#9B9388] cursor-not-allowed'
-            }
-          `}
+          onClick={handleExitTesting}
+          className="absolute top-6 left-6 z-10 font-body text-[14px] text-qtc-copper cursor-pointer hover:text-qtc-brass transition-colors select-none"
         >
-          START TESTING
+          ← Exit Testing Mode
         </button>
-      </div>
-    </main>
+
+        {/* Header */}
+        <div className="flex flex-col items-center pt-16 pb-8 px-6">
+          <h1 className="font-heading text-[32px] font-bold text-qtc-brass tracking-tight select-none">
+            TESTING MODE
+          </h1>
+          <p className="mt-2 font-body text-[14px] text-qtc-copper">
+            Quick single-game testing
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col items-center px-6 pb-8 overflow-y-auto">
+          {/* Player Count */}
+          <div className="w-full max-w-[400px] mb-8">
+            <p className="font-mono text-[13px] font-medium uppercase tracking-wider text-qtc-copper mb-4 text-center">
+              Number of Test Players
+            </p>
+            <div className="flex gap-4 justify-center">
+              {[3, 4, 5, 6].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPlayerCount(num)}
+                  className={`
+                    w-[60px] h-[60px] rounded-lg border-2
+                    font-heading text-[24px] font-bold
+                    transition-all duration-150 ease-out
+                    hover:scale-[0.98] active:scale-[0.96]
+                    cursor-pointer select-none
+                    ${playerCount === num
+                      ? 'bg-brass-gradient text-qtc-black border-qtc-brass-light/30 shadow-brass'
+                      : 'bg-transparent text-qtc-cream border-qtc-brass/50 hover:border-qtc-brass'
+                    }
+                  `}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+            <p className="mt-4 font-body text-[12px] text-qtc-copper text-center">
+              Will generate: {generateTestPlayers(playerCount).map(p => p.name).join(', ')}
+            </p>
+          </div>
+
+          {/* Game Selection */}
+          <div className="w-full max-w-[400px] mb-8">
+            <p className="font-mono text-[13px] font-medium uppercase tracking-wider text-qtc-copper mb-4 text-center">
+              Game to Test
+            </p>
+            <div className="space-y-3">
+              {gameOptions.map((game) => (
+                <button
+                  key={game.id}
+                  onClick={() => setSelectedGame(game.type)}
+                  className={`
+                    w-full py-4 px-6 rounded-lg border-2 font-heading text-[18px] font-bold
+                    transition-all duration-150 ease-out cursor-pointer
+                    hover:scale-[0.98] active:scale-[0.96] select-none
+                    ${selectedGame === game.type
+                      ? 'bg-brass-gradient text-qtc-black border-qtc-brass-light/30 shadow-brass'
+                      : 'bg-transparent text-qtc-cream border-qtc-brass/50 hover:border-qtc-brass hover:bg-qtc-charcoal'
+                    }
+                  `}
+                >
+                  {game.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Savagery Level */}
+          <div className="w-full max-w-[400px] mb-8">
+            <p className="font-mono text-[13px] font-medium uppercase tracking-wider text-qtc-copper mb-4 text-center">
+              Savagery Level
+            </p>
+            <div className="flex gap-3 justify-center">
+              {(['gentle', 'standard', 'brutal'] as const).map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setSavageryLevel(level)}
+                  className={`
+                    px-6 py-3 rounded-lg font-body text-[14px] font-bold border-2
+                    transition-all duration-150 ease-out cursor-pointer
+                    hover:scale-[0.98] active:scale-[0.96] select-none
+                    ${savageryLevel === level
+                      ? 'bg-brass-gradient text-qtc-black border-qtc-brass-light/30 shadow-brass'
+                      : 'bg-transparent text-qtc-cream border-qtc-brass/50 hover:border-qtc-brass'
+                    }
+                  `}
+                >
+                  {level.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Location */}
+          <div className="w-full max-w-[400px] mb-8">
+            <p className="font-mono text-[13px] font-medium uppercase tracking-wider text-qtc-copper mb-4 text-center">
+              Location (Optional)
+            </p>
+            <BrassInput
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Test City"
+              className="w-full"
+            />
+          </div>
+
+          {/* Start Button */}
+          <BrassButton
+            onClick={handleStartTesting}
+            disabled={!selectedGame}
+            variant={selectedGame ? "holiday" : "secondary"}
+            size="lg"
+            className="w-full max-w-[400px]"
+          >
+            START TESTING
+          </BrassButton>
+        </div>
+      </main>
+    </SteampunkLayout>
   );
 }
 

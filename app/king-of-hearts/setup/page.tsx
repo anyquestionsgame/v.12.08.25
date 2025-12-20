@@ -2,6 +2,14 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { 
+  SteampunkLayout, 
+  BrassButton, 
+  BrassInput, 
+  GameCard, 
+  HolidayGarland, 
+  Gear 
+} from '@/components/ui/qtc-components';
 
 interface PlayerSetupData {
   name: string;
@@ -16,9 +24,11 @@ type SetupPhase = 'input' | 'generating' | 'ready';
 export default function KingOfHeartsSetup() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#FFF8DC] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#C41E3A] border-t-transparent rounded-full animate-spin" />
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     }>
       <KingOfHeartsSetupContent />
     </Suspense>
@@ -46,7 +56,6 @@ function KingOfHeartsSetupContent() {
 
   // Generation progress
   const [generationProgress, setGenerationProgress] = useState<string>('');
-  const [categoriesGenerated, setCategoriesGenerated] = useState(0);
 
   // ═══════════════════════════════════════════════════════════
   // QUICK TEST MODE
@@ -253,9 +262,11 @@ function KingOfHeartsSetupContent() {
   // Prevent SSR issues
   if (!mounted) {
     return (
-      <main className="min-h-screen bg-[#FFF8DC] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#C41E3A] border-t-transparent rounded-full animate-spin" />
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     );
   }
 
@@ -267,112 +278,109 @@ function KingOfHeartsSetupContent() {
     // Show Quick Test UI
     if (setupPhase === 'generating' || setupPhase === 'ready') {
       return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-          <div className="text-center max-w-[500px]">
-            <div className="mb-8 flex justify-center">
-              {setupPhase === 'generating' ? (
-                <div className="w-20 h-20 border-4 border-[#D4AF37] border-t-[#C41E3A] rounded-full animate-spin" />
-              ) : (
-                <div className="w-20 h-20 bg-[#165B33] rounded-full flex items-center justify-center">
-                  <span className="text-4xl">✓</span>
+        <SteampunkLayout variant="dark">
+          <div className="min-h-screen flex flex-col items-center justify-center px-6">
+            <div className="text-center max-w-[500px]">
+              <div className="mb-8 flex justify-center">
+                {setupPhase === 'generating' ? (
+                  <Gear size="lg" speed="fast" />
+                ) : (
+                  <div className="w-20 h-20 bg-qtc-holiday-green rounded-full flex items-center justify-center">
+                    <span className="text-4xl text-qtc-cream">✓</span>
+                  </div>
+                )}
+              </div>
+              
+              <h1 className="font-heading text-[36px] font-bold text-qtc-brass-light">
+                {setupPhase === 'generating' ? 'Generating questions...' : 'Ready!'}
+              </h1>
+              
+              <p className="mt-4 font-body text-[18px] text-qtc-copper">
+                {generationProgress}
+              </p>
+              
+              <GameCard variant="brass" className="mt-8">
+                <div className="text-center">
+                  <span className="font-body text-[16px] text-qtc-brass-light font-semibold">
+                    Testing: {testCategory}
+                  </span>
                 </div>
-              )}
-            </div>
-            
-            <h1 className="font-heading text-[36px] font-bold text-[#165B33]">
-              {setupPhase === 'generating' ? 'Generating questions...' : 'Ready!'}
-            </h1>
-            
-            <p className="mt-4 font-body text-[18px] text-[#52796F]">
-              {generationProgress}
-            </p>
-            
-            <div className="mt-8 px-6 py-3 bg-white rounded-full inline-block">
-              <span className="font-body text-[16px] text-[#165B33] font-semibold">
-                Testing: {testCategory}
-              </span>
+              </GameCard>
             </div>
           </div>
-        </main>
+        </SteampunkLayout>
       );
     }
 
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        <div className="w-full max-w-[500px]">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-block px-4 py-2 bg-[#CD7F32] text-white rounded-full mb-4">
-              <span className="font-body text-[14px] font-bold uppercase tracking-wider">🧪 Quick Test Mode</span>
+      <SteampunkLayout variant="dark" showGears={true}>
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+          <div className="w-full max-w-[500px]">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <HolidayGarland className="mb-4" />
+              <div className="inline-block px-4 py-2 bg-qtc-copper text-qtc-cream rounded-full mb-4">
+                <span className="font-mono text-[14px] font-bold uppercase tracking-wider">🧪 Quick Test Mode</span>
+              </div>
+              <h1 className="font-heading text-[32px] font-bold text-qtc-brass-light">
+                Test a Category
+              </h1>
+              <p className="mt-2 font-body text-[16px] text-qtc-copper">
+                Quickly test how AI generates questions for any topic
+              </p>
             </div>
-            <h1 className="font-heading text-[32px] font-bold text-[#165B33]">
-              Test a Category
-            </h1>
-            <p className="mt-2 font-body text-[16px] text-[#52796F]">
-              Quickly test how AI generates questions for any topic
-            </p>
-          </div>
 
-          {/* Category Input */}
-          <div className="bg-white rounded-2xl p-8 shadow-xl" style={{ boxShadow: "0 8px 30px rgba(196,30,58,0.15)" }}>
-            <label className="block font-body text-[18px] font-medium text-[#165B33] mb-4">
-              Enter a category to test:
-            </label>
-            <input
-              type="text"
-              value={testCategory}
-              onChange={(e) => setTestCategory(e.target.value)}
-              placeholder="e.g., Cooking, Wine, Trucks, Pottery..."
-              className="w-full h-[60px] px-5 bg-[#FFF8DC] border-2 border-[#C41E3A] rounded-xl font-body text-[18px] text-[#165B33] placeholder-[#52796F]/60 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/30"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && testCategory.trim()) {
-                  handleQuickTest();
-                }
-              }}
-            />
-            
-            <p className="mt-3 font-body text-[14px] text-[#52796F]">
-              This will generate 4 questions at different difficulty levels
-            </p>
-          </div>
+            {/* Category Input */}
+            <GameCard variant="brass" className="mb-6">
+              <BrassInput
+                label="Enter a category to test"
+                value={testCategory}
+                onChange={(e) => setTestCategory(e.target.value)}
+                placeholder="e.g., Cooking, Wine, Trucks, Pottery..."
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && testCategory.trim()) {
+                    handleQuickTest();
+                  }
+                }}
+              />
+              
+              <p className="mt-4 font-body text-[14px] text-qtc-copper">
+                This will generate 4 questions at different difficulty levels
+              </p>
+            </GameCard>
 
-          {/* Generate Button */}
-          <button
-            onClick={handleQuickTest}
-            disabled={!testCategory.trim()}
-            className={`
-              mt-6 w-full py-5 font-body text-lg font-bold rounded-xl cursor-pointer
-              transition-all duration-150 ease-out select-none
-              ${testCategory.trim()
-                ? 'bg-[#C41E3A] text-[#FFF8DC] hover:bg-[#A91830] active:scale-[0.98] shadow-lg'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }
-            `}
-            style={testCategory.trim() ? { boxShadow: "0 4px 20px rgba(196,30,58,0.35)" } : {}}
-          >
-            Generate Test Questions
-          </button>
-
-          {/* Back to Normal Mode */}
-          {playerNames.length > 0 && (
-            <button
-              onClick={() => setQuickTestMode(false)}
-              className="mt-4 w-full py-3 font-body text-[16px] text-[#52796F] hover:text-[#165B33] transition-colors"
+            {/* Generate Button */}
+            <BrassButton
+              variant="holiday"
+              size="lg"
+              onClick={handleQuickTest}
+              disabled={!testCategory.trim()}
+              className="w-full"
             >
-              ← Back to Normal Setup
+              Generate Test Questions
+            </BrassButton>
+
+            {/* Back to Normal Mode */}
+            {playerNames.length > 0 && (
+              <GhostButton
+                onClick={() => setQuickTestMode(false)}
+                className="w-full mt-4"
+              >
+                ← Back to Normal Setup
+              </GhostButton>
+            )}
+            
+            {/* Back to Home */}
+            <button
+              onClick={() => router.push('/king-of-hearts')}
+              className="mt-2 w-full py-3 font-body text-[14px] text-qtc-copper/70 hover:text-qtc-copper transition-colors"
+            >
+              Back to Home
             </button>
-          )}
-          
-          {/* Back to Home */}
-          <button
-            onClick={() => router.push('/king-of-hearts')}
-            className="mt-2 w-full py-3 font-body text-[14px] text-[#52796F]/70 hover:text-[#52796F] transition-colors"
-          >
-            Back to Home
-          </button>
+          </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
@@ -383,63 +391,67 @@ function KingOfHeartsSetupContent() {
     const allCategories = players.flatMap(p => [p.selfCategory, p.peerCategory]).filter(Boolean);
     
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        <div className="text-center max-w-[500px]">
-          {/* Animated spinner */}
-          <div className="mb-8 flex justify-center">
-            {setupPhase === 'generating' ? (
-              <div className="w-20 h-20 border-4 border-[#D4AF37] border-t-[#C41E3A] rounded-full animate-spin" />
-            ) : (
-              <div className="w-20 h-20 bg-[#165B33] rounded-full flex items-center justify-center">
-                <span className="text-4xl">✓</span>
+      <SteampunkLayout variant="holiday">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="text-center max-w-[500px]">
+            {/* Animated spinner */}
+            <div className="mb-8 flex justify-center">
+              {setupPhase === 'generating' ? (
+                <Gear size="lg" speed="fast" />
+              ) : (
+                <div className="w-20 h-20 bg-qtc-holiday-green rounded-full flex items-center justify-center">
+                  <span className="text-4xl text-qtc-cream">✓</span>
+                </div>
+              )}
+            </div>
+            
+            <HolidayGarland className="mb-6" />
+            
+            <h1 className="font-heading text-[36px] font-bold text-qtc-brass-light">
+              {setupPhase === 'generating' ? 'Preparing your game...' : 'Ready to play!'}
+            </h1>
+            
+            <p className="mt-4 font-body text-[18px] text-qtc-copper">
+              {setupPhase === 'generating' 
+                ? 'Generating trivia questions with AI...'
+                : 'All questions loaded!'
+              }
+            </p>
+            
+            {/* Category list */}
+            <GameCard variant="brass" className="mt-8">
+              <p className="font-mono text-[12px] text-qtc-copper uppercase tracking-wider font-semibold mb-4">
+                Categories
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {allCategories.map((cat, i) => (
+                  <span 
+                    key={i}
+                    className="px-3 py-1 bg-qtc-brass/20 text-qtc-brass-light font-body text-[14px] rounded-full border border-qtc-brass/30"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            </GameCard>
+            
+            {/* Bouncing dots */}
+            {setupPhase === 'generating' && (
+              <div className="mt-8 flex justify-center gap-2">
+                <div className="w-3 h-3 bg-qtc-holiday-red rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-3 h-3 bg-qtc-brass rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-3 h-3 bg-qtc-holiday-green rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             )}
+            
+            {generationProgress && (
+              <p className="mt-4 font-body text-[14px] text-qtc-copper">
+                {generationProgress}
+              </p>
+            )}
           </div>
-          
-          <h1 className="font-heading text-[36px] font-bold text-[#165B33]">
-            {setupPhase === 'generating' ? 'Preparing your game...' : 'Ready to play!'}
-          </h1>
-          
-          <p className="mt-4 font-body text-[18px] text-[#52796F]">
-            {setupPhase === 'generating' 
-              ? 'Generating trivia questions with AI...'
-              : 'All questions loaded!'
-            }
-          </p>
-          
-          {/* Category list */}
-          <div className="mt-8 bg-white rounded-2xl p-6 shadow-lg" style={{ boxShadow: "0 4px 20px rgba(196,30,58,0.1)" }}>
-            <p className="font-body text-[12px] text-[#D4AF37] uppercase tracking-wider font-semibold mb-4">
-              Categories
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {allCategories.map((cat, i) => (
-                <span 
-                  key={i}
-                  className="px-3 py-1 bg-[#FFF8DC] text-[#165B33] font-body text-[14px] rounded-full"
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-          
-          {/* Bouncing dots */}
-          {setupPhase === 'generating' && (
-            <div className="mt-8 flex justify-center gap-2">
-              <div className="w-3 h-3 bg-[#C41E3A] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-3 h-3 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-3 h-3 bg-[#165B33] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-          )}
-          
-          {generationProgress && (
-            <p className="mt-4 font-body text-[14px] text-[#52796F]">
-              {generationProgress}
-            </p>
-          )}
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
@@ -490,9 +502,11 @@ function KingOfHeartsSetupContent() {
 
   if (!currentPlayer) {
     return (
-      <main className="min-h-screen bg-[#FFF8DC] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#C41E3A] border-t-transparent rounded-full animate-spin" />
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     );
   }
 
@@ -500,100 +514,95 @@ function KingOfHeartsSetupContent() {
   // PLAYER INPUT SCREEN
   // ═══════════════════════════════════════════════════════════
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-      {/* Quick Test Mode Button - Top Right */}
-      <button
-        onClick={() => setQuickTestMode(true)}
-        className="absolute top-4 right-4 px-3 py-2 bg-[#CD7F32] text-white font-body text-[12px] font-bold rounded-lg hover:bg-[#B8722D] transition-colors"
-      >
-        🧪 Quick Test
-      </button>
-
-      <div className="flex flex-col items-center w-full max-w-[500px]">
-        {/* Progress indicator */}
-        <p className="font-body text-[13px] text-[#52796F] uppercase tracking-wider">
-          Player {currentPlayerIndex + 1} of {players.length}
-        </p>
-
-        {/* Title */}
-        <h1 className="mt-4 font-heading text-[36px] font-bold text-[#165B33] tracking-tight select-none text-center">
-          {currentPlayer.name}, {getPositionText()}
-        </h1>
-
-        <div className="mt-10 w-full space-y-8">
-          {/* Question 1: Self Category */}
-          <div className="bg-white rounded-2xl p-6 shadow-md" style={{ boxShadow: "0 4px 20px rgba(196,30,58,0.1)" }}>
-            <label className="block font-body text-[18px] font-medium text-[#165B33] mb-2 select-none">
-              What&apos;s something you know too much about?
-            </label>
-            <p className="mb-4 font-body text-[14px] text-[#52796F]">
-              You can be as specific as you want
-            </p>
-            <input
-              type="text"
-              value={selfCategory}
-              onChange={(e) => setSelfCategory(e.target.value)}
-              placeholder="Your weird expertise..."
-              className="w-full h-[56px] px-4 bg-[#FFF8DC] border-2 border-[#C41E3A] rounded-xl font-body text-[16px] text-[#165B33] placeholder-[#52796F] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/30"
-              autoFocus
-            />
-          </div>
-
-          {/* Question 2: Peer Category */}
-          {peerTargetPlayer && (
-            <div className="bg-white rounded-2xl p-6 shadow-md" style={{ boxShadow: "0 4px 20px rgba(196,30,58,0.1)" }}>
-              <label className="block font-body text-[18px] font-medium text-[#165B33] mb-2 select-none">
-                What&apos;s something <span className="text-[#C41E3A]">{peerTargetPlayer}</span> won&apos;t shut up about?
-              </label>
-              <p className="mb-4 font-body text-[14px] text-[#52796F]">
-                What does {peerTargetPlayer} always bring up?
-              </p>
-              <input
-                type="text"
-                value={peerCategory}
-                onChange={(e) => setPeerCategory(e.target.value)}
-                placeholder={`${peerTargetPlayer}'s obsession...`}
-                className="w-full h-[56px] px-4 bg-[#FFF8DC] border-2 border-[#C41E3A] rounded-xl font-body text-[16px] text-[#165B33] placeholder-[#52796F] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/30"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Submit Button */}
+    <SteampunkLayout variant="dark" showGears={true}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative">
+        {/* Quick Test Mode Button - Top Right */}
         <button
-          onClick={handleNextPlayer}
-          disabled={!isFormComplete}
-          className={`
-            mt-10 px-12 py-5 font-body text-lg font-bold rounded-xl cursor-pointer
-            transition-all duration-150 ease-out select-none
-            ${isFormComplete
-              ? 'bg-[#C41E3A] text-[#FFF8DC] hover:bg-[#D4AF37] hover:text-[#165B33] hover:scale-[0.98] active:scale-[0.96] shadow-lg'
-              : 'bg-white border-2 border-[#52796F] text-[#52796F] cursor-not-allowed'
-            }
-          `}
-          style={isFormComplete ? { boxShadow: "0 4px 20px rgba(196,30,58,0.25)" } : {}}
+          onClick={() => setQuickTestMode(true)}
+          className="absolute top-4 right-4 px-3 py-2 bg-qtc-copper text-qtc-cream font-body text-[12px] font-bold rounded-lg hover:bg-qtc-copper-dark transition-colors"
         >
-          {isLastPlayer ? 'Start Game' : 'Next Player'}
+          🧪 Quick Test
         </button>
 
-        {/* Visual progress dots */}
-        <div className="mt-8 flex gap-2">
-          {players.map((_, index) => (
-            <div
-              key={index}
-              className={`
-                w-2 h-2 rounded-full transition-all duration-300
-                ${index < currentPlayerIndex
-                  ? 'bg-[#D4AF37]'
-                  : index === currentPlayerIndex
-                    ? 'bg-[#C41E3A]'
-                    : 'bg-[#52796F]/30'
-                }
-              `}
-            />
-          ))}
+        <div className="flex flex-col items-center w-full max-w-[500px]">
+          {/* Holiday decoration */}
+          <HolidayGarland className="mb-6" />
+
+          {/* Progress indicator */}
+          <p className="font-mono text-[13px] text-qtc-copper uppercase tracking-wider">
+            Player {currentPlayerIndex + 1} of {players.length}
+          </p>
+
+          {/* Title */}
+          <h1 className="mt-4 font-heading text-[36px] font-bold text-qtc-brass-light tracking-tight select-none text-center">
+            {currentPlayer.name}, {getPositionText()}
+          </h1>
+
+          <div className="mt-10 w-full space-y-6">
+            {/* Question 1: Self Category */}
+            <GameCard variant="brass">
+              <label className="block font-heading text-[18px] font-bold text-qtc-brass-light mb-2 select-none">
+                What&apos;s something you know too much about?
+              </label>
+              <p className="mb-4 font-body text-[14px] text-qtc-copper">
+                You can be as specific as you want
+              </p>
+              <BrassInput
+                value={selfCategory}
+                onChange={(e) => setSelfCategory(e.target.value)}
+                placeholder="Your weird expertise..."
+                autoFocus
+              />
+            </GameCard>
+
+            {/* Question 2: Peer Category */}
+            {peerTargetPlayer && (
+              <GameCard variant="copper">
+                <label className="block font-heading text-[18px] font-bold text-qtc-copper-light mb-2 select-none">
+                  What&apos;s something <span className="text-qtc-holiday-red">{peerTargetPlayer}</span> won&apos;t shut up about?
+                </label>
+                <p className="mb-4 font-body text-[14px] text-qtc-copper">
+                  What does {peerTargetPlayer} always bring up?
+                </p>
+                <BrassInput
+                  value={peerCategory}
+                  onChange={(e) => setPeerCategory(e.target.value)}
+                  placeholder={`${peerTargetPlayer}'s obsession...`}
+                />
+              </GameCard>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <BrassButton
+            variant={isFormComplete ? "holiday" : "primary"}
+            size="lg"
+            onClick={handleNextPlayer}
+            disabled={!isFormComplete}
+            className="mt-10 w-full"
+          >
+            {isLastPlayer ? '🎄 Start Game' : 'Next Player'}
+          </BrassButton>
+
+          {/* Visual progress dots */}
+          <div className="mt-8 flex gap-2">
+            {players.map((_, index) => (
+              <div
+                key={index}
+                className={`
+                  w-2 h-2 rounded-full transition-all duration-300
+                  ${index < currentPlayerIndex
+                    ? 'bg-qtc-brass'
+                    : index === currentPlayerIndex
+                      ? 'bg-qtc-holiday-red'
+                      : 'bg-qtc-copper/30'
+                  }
+                `}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </main>
+    </SteampunkLayout>
   );
 }

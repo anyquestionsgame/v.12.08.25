@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { SteampunkLayout, BrassButton, BrassInput, GameCard, GhostButton, Gear } from '@/components/ui/qtc-components';
 
 interface PlayerData {
   name: string;
@@ -172,274 +173,280 @@ function OnboardingContent() {
   // Prevent SSR issues - don't render until mounted
   if (!mounted) {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
-        <p className="text-[#9B9388]">Loading...</p>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // Intro Screen
   if (step === 'intro') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
-        <div className="relative z-10 flex flex-col items-center">
-          {/* Heading */}
-          <h1 className="font-heading text-[52px] font-bold text-[#F0EEE9] tracking-tight select-none">
-            INTRODUCTIONS
-          </h1>
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col items-center justify-center">
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Heading */}
+            <h1 className="font-heading text-[52px] font-bold text-qtc-brass-light tracking-tight select-none">
+              INTRODUCTIONS
+            </h1>
 
-          {/* Decorative line */}
-          <div className="mt-4 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
+            {/* Decorative line */}
+            <div className="mt-4 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
 
-          {/* Instructions */}
-          <p className="mt-8 font-body text-[16px] text-[#9B9388] text-center max-w-[300px]">
-            Pass the phone around. Each player gets 60 seconds.
-          </p>
+            {/* Instructions */}
+            <p className="mt-8 font-body text-[16px] text-qtc-copper text-center max-w-[300px]">
+              Pass the phone around. Each player gets 60 seconds.
+            </p>
 
-          {/* Start button */}
-          <button
-            onClick={handleStart}
-            className="mt-[80px] px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-            style={{ borderRadius: '8px' }}
-          >
-            START
-          </button>
-        </div>
-      </main>
+            {/* Start button */}
+            <BrassButton
+              onClick={handleStart}
+              variant="holiday"
+              size="lg"
+              className="mt-[80px]"
+            >
+              START
+            </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // Savagery Selection Screen
   if (step === 'savagery') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
-          <h1 className="font-heading text-[42px] font-bold text-[#F0EEE9] tracking-tight select-none text-center">
-            HOW SAVAGE?
-          </h1>
-          
-          <p className="mt-4 font-body text-[16px] text-[#9B9388] text-center">
-            This controls how edgy the prompts get
-          </p>
-          
-          <div className="mt-8 w-full space-y-4">
-            {/* GENTLE */}
-            <button
-              onClick={() => setSavageryLevel('gentle')}
-              className={`
-                w-full p-6 rounded-xl border-2 border-[#F0EEE9] text-left
-                transition-all duration-150 ease-out cursor-pointer
-                ${savageryLevel === 'gentle' ? 'bg-[#2D2B28]' : 'bg-transparent'}
-              `}
-            >
-              <h3 className="font-heading text-[24px] font-bold text-[#F0EEE9]">GENTLE</h3>
-              <p className="mt-2 font-body text-[14px] text-[#9B9388]">
-                Things you&apos;d admit to your mom
-              </p>
-            </button>
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
+            <h1 className="font-heading text-[42px] font-bold text-qtc-brass-light tracking-tight select-none text-center">
+              HOW SAVAGE?
+            </h1>
             
-            {/* STANDARD */}
-            <button
-              onClick={() => setSavageryLevel('standard')}
-              className={`
-                w-full p-6 rounded-xl border-2 border-[#F0EEE9] text-left
-                transition-all duration-150 ease-out cursor-pointer
-                ${savageryLevel === 'standard' ? 'bg-[#2D2B28]' : 'bg-transparent'}
-              `}
-            >
-              <h3 className="font-heading text-[24px] font-bold text-[#F0EEE9]">STANDARD</h3>
-              <p className="mt-2 font-body text-[14px] text-[#9B9388]">
-                Embarrassing, not incriminating
-              </p>
-            </button>
+            <p className="mt-4 font-body text-[16px] text-qtc-copper text-center">
+              This controls how edgy the prompts get
+            </p>
             
-            {/* BRUTAL */}
-            <button
-              onClick={() => setSavageryLevel('brutal')}
-              className={`
-                w-full p-6 rounded-xl border-2 border-[#F0EEE9] text-left
-                transition-all duration-150 ease-out cursor-pointer
-                ${savageryLevel === 'brutal' ? 'bg-[#2D2B28]' : 'bg-transparent'}
-              `}
+            <div className="mt-8 w-full space-y-4">
+              {/* GENTLE */}
+              <button
+                onClick={() => setSavageryLevel('gentle')}
+                className={`
+                  w-full p-6 rounded-xl border-2 text-left
+                  transition-all duration-150 ease-out cursor-pointer
+                  ${savageryLevel === 'gentle' 
+                    ? 'bg-qtc-charcoal border-qtc-brass shadow-brass' 
+                    : 'bg-transparent border-qtc-brass/50 hover:border-qtc-brass'
+                  }
+                `}
+              >
+                <h3 className="font-heading text-[24px] font-bold text-qtc-brass-light">GENTLE</h3>
+                <p className="mt-2 font-body text-[14px] text-qtc-copper">
+                  Things you&apos;d admit to your mom
+                </p>
+              </button>
+              
+              {/* STANDARD */}
+              <button
+                onClick={() => setSavageryLevel('standard')}
+                className={`
+                  w-full p-6 rounded-xl border-2 text-left
+                  transition-all duration-150 ease-out cursor-pointer
+                  ${savageryLevel === 'standard' 
+                    ? 'bg-qtc-charcoal border-qtc-brass shadow-brass' 
+                    : 'bg-transparent border-qtc-brass/50 hover:border-qtc-brass'
+                  }
+                `}
+              >
+                <h3 className="font-heading text-[24px] font-bold text-qtc-brass-light">STANDARD</h3>
+                <p className="mt-2 font-body text-[14px] text-qtc-copper">
+                  Embarrassing, not incriminating
+                </p>
+              </button>
+              
+              {/* BRUTAL */}
+              <button
+                onClick={() => setSavageryLevel('brutal')}
+                className={`
+                  w-full p-6 rounded-xl border-2 text-left
+                  transition-all duration-150 ease-out cursor-pointer
+                  ${savageryLevel === 'brutal' 
+                    ? 'bg-qtc-charcoal border-qtc-brass shadow-brass' 
+                    : 'bg-transparent border-qtc-brass/50 hover:border-qtc-brass'
+                  }
+                `}
+              >
+                <h3 className="font-heading text-[24px] font-bold text-qtc-brass-light">BRUTAL</h3>
+                <p className="mt-2 font-body text-[14px] text-qtc-copper">
+                  Everything&apos;s on the table. Blame the game.
+                </p>
+              </button>
+            </div>
+            
+            <BrassButton
+              onClick={handleSavageryContinue}
+              variant="holiday"
+              size="lg"
+              className="mt-10"
             >
-              <h3 className="font-heading text-[24px] font-bold text-[#F0EEE9]">BRUTAL</h3>
-              <p className="mt-2 font-body text-[14px] text-[#9B9388]">
-                Everything&apos;s on the table. Blame the game.
-              </p>
-            </button>
+              CONTINUE
+            </BrassButton>
           </div>
-          
-          <button
-            onClick={handleSavageryContinue}
-            className="mt-10 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-            style={{ borderRadius: '8px' }}
-          >
-            CONTINUE
-          </button>
-        </div>
-      </main>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // Location Input Screen
   if (step === 'location') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
-          <h1 className="font-heading text-[42px] font-bold text-[#F0EEE9] tracking-tight select-none text-center">
-            WHERE ARE YOU PLAYING?
-          </h1>
-          
-          <p className="mt-4 font-body text-[14px] text-[#9B9388] text-center">
-            This personalizes some questions to your area
-          </p>
-          
-          {/* Auto-detect link */}
-          <button
-            onClick={handleLocationDetect}
-            className="mt-6 font-body text-[14px] text-[#D4A574] cursor-pointer hover:underline"
-          >
-            📍 Use my current location
-          </button>
-          
-          {locationError && (
-            <p className="mt-2 font-body text-[12px] text-[#C45B4D] text-center">
-              {locationError}
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
+            <h1 className="font-heading text-[42px] font-bold text-qtc-brass-light tracking-tight select-none text-center">
+              WHERE ARE YOU PLAYING?
+            </h1>
+            
+            <p className="mt-4 font-body text-[14px] text-qtc-copper text-center">
+              This personalizes some questions to your area
             </p>
-          )}
-          
-          {/* Input field */}
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => {
-              setLocation(e.target.value);
-              setLocationError('');
-            }}
-            placeholder="City, State (e.g., Austin, Texas)"
-            className="mt-6 w-full h-[56px] px-4 bg-transparent border-2 border-[#F0EEE9] rounded-lg font-body text-[20px] text-[#F0EEE9] placeholder-[#9B9388] focus:outline-none focus:ring-2 focus:ring-[#F0EEE9]/30"
-          />
-          
-          <p className="mt-2 font-body text-[12px] text-[#9B9388] text-center">
-            Optional - skip if you want generic questions only
-          </p>
-          
-          {/* Buttons */}
-          <div className="mt-8 w-full flex gap-4">
+            
+            {/* Auto-detect link */}
             <button
-              onClick={handleLocationSkip}
-              className="flex-1 py-4 bg-transparent border-2 border-[#9B9388] text-[#9B9388] font-body text-[16px] font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:border-[#F0EEE9] hover:text-[#F0EEE9] select-none"
+              onClick={handleLocationDetect}
+              className="mt-6 font-body text-[14px] text-qtc-brass cursor-pointer hover:text-qtc-brass-light transition-colors"
             >
-              SKIP
+              📍 Use my current location
             </button>
             
-            <button
-              onClick={handleLocationContinue}
-              className="flex-1 py-4 bg-[#F0EEE9] text-[#1F1E1C] font-body text-[16px] font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-            >
-              CONTINUE
-            </button>
+            {locationError && (
+              <p className="mt-2 font-body text-[12px] text-qtc-holiday-red text-center">
+                {locationError}
+              </p>
+            )}
+            
+            {/* Input field */}
+            <BrassInput
+              type="text"
+              value={location}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setLocationError('');
+              }}
+              placeholder="City, State (e.g., Austin, Texas)"
+              className="mt-6 w-full"
+            />
+            
+            <p className="mt-2 font-body text-[12px] text-qtc-copper text-center">
+              Optional - skip if you want generic questions only
+            </p>
+            
+            {/* Buttons */}
+            <div className="mt-8 w-full flex gap-4">
+              <GhostButton
+                onClick={handleLocationSkip}
+                className="flex-1"
+              >
+                SKIP
+              </GhostButton>
+              
+              <BrassButton
+                onClick={handleLocationContinue}
+                variant="holiday"
+                size="lg"
+                className="flex-1"
+              >
+                CONTINUE
+              </BrassButton>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // Questions Screen
   return (
-    <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-      <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
-        {/* Header with timer */}
-        <div className="w-full flex items-center justify-between mb-8">
-          <h2 className="font-heading text-[24px] font-bold text-[#F0EEE9] select-none">
-            YOUR TURN, PLAYER {currentPlayer}
-          </h2>
-          <span className={`font-mono text-[32px] ${timerExpired ? 'text-[#F0EEE9]' : 'text-[#D4A574]'}`}>
-            {formatTime(timer)}
-          </span>
-        </div>
+    <SteampunkLayout variant="dark" showGears={true}>
+      <main className="min-h-screen flex flex-col items-center justify-center px-6">
+        <div className="relative z-10 flex flex-col items-center w-full max-w-[400px]">
+          {/* Header with timer */}
+          <div className="w-full flex items-center justify-between mb-8">
+            <h2 className="font-heading text-[24px] font-bold text-qtc-brass-light select-none">
+              YOUR TURN, PLAYER {currentPlayer}
+            </h2>
+            <span className={`font-mono text-[32px] ${timerExpired ? 'text-qtc-cream' : 'text-qtc-brass'}`}>
+              {formatTime(timer)}
+            </span>
+          </div>
 
-        {/* Timer warning */}
-        {timerExpired && (
-          <p className="mb-4 font-body text-[14px] text-[#D4A574] text-center">
-            Time&apos;s up! But no rush—finish when you&apos;re ready.
+          {/* Timer warning */}
+          {timerExpired && (
+            <p className="mb-4 font-body text-[14px] text-qtc-brass text-center">
+              Time&apos;s up! But no rush—finish when you&apos;re ready.
+            </p>
+          )}
+
+          {/* Input fields */}
+          <GameCard variant="brass" className="w-full mb-6">
+            <div className="space-y-4">
+              <BrassInput
+                label="Hi! I'm:"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="w-full"
+              />
+
+              <BrassInput
+                label="I'm weirdly good at:"
+                value={goodAt}
+                onChange={(e) => setGoodAt(e.target.value)}
+                placeholder="Something unexpected"
+                className="w-full"
+              />
+
+              <BrassInput
+                label="I'd rather die than:"
+                value={ratherDie}
+                onChange={(e) => setRatherDie(e.target.value)}
+                placeholder="Your dealbreaker"
+                className="w-full"
+              />
+            </div>
+          </GameCard>
+
+          {/* Next/Finish button */}
+          <BrassButton
+            onClick={handleNextPlayer}
+            disabled={!isFormComplete}
+            variant={isFormComplete ? "holiday" : "secondary"}
+            size="lg"
+            className="w-full"
+          >
+            {currentPlayer >= playerCount ? 'FINISH' : 'NEXT PLAYER'}
+          </BrassButton>
+
+          {/* Progress indicator */}
+          <p className="mt-6 font-body text-[13px] text-qtc-copper">
+            Player {currentPlayer} of {playerCount}
           </p>
-        )}
-
-        {/* Input fields */}
-        <div className="w-full space-y-4">
-          <div>
-            <label className="block font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-2 select-none">
-              Hi! I&apos;m:
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="w-full h-[56px] px-4 bg-transparent border-2 border-[#F0EEE9] rounded-lg font-body text-[16px] text-[#F0EEE9] placeholder-[#9B9388] focus:outline-none focus:ring-2 focus:ring-[#F0EEE9]/30"
-            />
-          </div>
-
-          <div>
-            <label className="block font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-2 select-none">
-              I&apos;m weirdly good at:
-            </label>
-            <input
-              type="text"
-              value={goodAt}
-              onChange={(e) => setGoodAt(e.target.value)}
-              placeholder="Something unexpected"
-              className="w-full h-[56px] px-4 bg-transparent border-2 border-[#F0EEE9] rounded-lg font-body text-[16px] text-[#F0EEE9] placeholder-[#9B9388] focus:outline-none focus:ring-2 focus:ring-[#F0EEE9]/30"
-            />
-          </div>
-
-          <div>
-            <label className="block font-body text-[13px] font-medium uppercase tracking-wider text-[#9B9388] mb-2 select-none">
-              I&apos;d rather die than:
-            </label>
-            <input
-              type="text"
-              value={ratherDie}
-              onChange={(e) => setRatherDie(e.target.value)}
-              placeholder="Your dealbreaker"
-              className="w-full h-[56px] px-4 bg-transparent border-2 border-[#F0EEE9] rounded-lg font-body text-[16px] text-[#F0EEE9] placeholder-[#9B9388] focus:outline-none focus:ring-2 focus:ring-[#F0EEE9]/30"
-            />
-          </div>
         </div>
-
-        {/* Next/Finish button */}
-        <button
-          onClick={handleNextPlayer}
-          disabled={!isFormComplete}
-          className={`
-            mt-[60px] px-12 py-5 font-body text-lg font-bold rounded cursor-pointer
-            transition-all duration-150 ease-out select-none
-            ${isFormComplete
-              ? 'bg-[#F0EEE9] text-[#1F1E1C] hover:opacity-90 hover:scale-[0.98] active:scale-[0.96]'
-              : 'bg-transparent border-2 border-[#9B9388] text-[#9B9388] cursor-not-allowed'
-            }
-          `}
-          style={{ borderRadius: '8px' }}
-        >
-          {currentPlayer >= playerCount ? 'FINISH' : 'NEXT PLAYER'}
-        </button>
-
-        {/* Progress indicator */}
-        <p className="mt-6 font-body text-[13px] text-[#9B9388]">
-          Player {currentPlayer} of {playerCount}
-        </p>
-      </div>
-    </main>
+      </main>
+    </SteampunkLayout>
   );
 }
 
 export default function Onboarding() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
-        <p className="text-[#9B9388]">Loading...</p>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </main>
+      </SteampunkLayout>
     }>
       <OnboardingContent />
     </Suspense>

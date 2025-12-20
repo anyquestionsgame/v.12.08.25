@@ -3,6 +3,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { TriviaQuestion } from '@/app/lib/aiQuestionEngine';
+import { 
+  SteampunkLayout, 
+  BrassButton, 
+  GameCard, 
+  HolidayGarland, 
+  Gear,
+  GaugePanel 
+} from '@/components/ui/qtc-components';
 
 interface Player {
   name: string;
@@ -548,9 +556,11 @@ export default function KingOfHeartsPlay() {
   // Loading state
   if (!mounted || gamePhase === 'loading' || players.length === 0) {
     return (
-      <main className="min-h-screen bg-[#FFF8DC] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#C41E3A] border-t-transparent rounded-full animate-spin" />
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     );
   }
 
@@ -568,391 +578,401 @@ export default function KingOfHeartsPlay() {
     const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
     
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        <div className="text-center">
-          <div className="mb-8 flex justify-center">
-            <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-[#C41E3A] rounded-full animate-spin" />
-          </div>
-          
-          <h1 className="font-heading text-[32px] font-bold text-[#165B33]">
-            {randomMessage}
-          </h1>
-          
-          <p className="mt-4 font-body text-[18px] text-[#52796F]">
-            Generating questions about <span className="text-[#C41E3A] font-semibold">{selectedCategory}</span>
-          </p>
-          
-          <div className="mt-6 flex justify-center gap-2">
-            <div className="w-2 h-2 bg-[#C41E3A] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 bg-[#165B33] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="text-center max-w-[500px]">
+            <div className="mb-8 flex justify-center">
+              <Gear size="lg" speed="fast" />
+            </div>
+            
+            <h1 className="font-heading text-[32px] font-bold text-qtc-brass-light">
+              {randomMessage}
+            </h1>
+            
+            <p className="mt-4 font-body text-[18px] text-qtc-copper">
+              Generating questions about <span className="text-qtc-holiday-red font-semibold">{selectedCategory}</span>
+            </p>
+            
+            <div className="mt-6 flex justify-center gap-2">
+              <div className="w-2 h-2 bg-qtc-holiday-red rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-2 h-2 bg-qtc-brass rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-2 h-2 bg-qtc-holiday-green rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
           </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
   // ═══════════════════════════════════════════════════════════
-  // SCREEN 6: CATEGORY SELECTION
+  // SCREEN: CATEGORY SELECTION
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'category-select') {
     return (
-      <main className="min-h-screen flex flex-col animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        {/* Round indicator */}
-        <div className="w-full py-3 bg-[#C41E3A] text-center shadow-md">
-          <p className="font-heading text-[16px] font-bold text-[#FFF8DC] uppercase tracking-wider">
-            Round {currentRound}: {roundTitle}
-          </p>
-        </div>
+      <SteampunkLayout variant="dark" showGears={true}>
+        <div className="min-h-screen flex flex-col">
+          {/* Round indicator */}
+          <div className="w-full py-3 bg-holiday-gradient text-center shadow-deep">
+            <p className="font-heading text-[16px] font-bold text-qtc-cream uppercase tracking-wider">
+              Round {currentRound}: {roundTitle}
+            </p>
+          </div>
 
-        {/* Scoreboard */}
-        <div className="px-4 py-4 flex items-center justify-center gap-4 bg-white/80 border-b border-[#D4AF37]/30">
-          {players.map((player, index) => (
-            <div 
-              key={player.name} 
-              className={`text-center px-4 py-2 rounded-xl transition-all ${
-                index === currentPlayerIndex ? 'bg-[#C41E3A] shadow-md' : 'bg-[#FFF8DC]'
-              }`}
-              style={index === currentPlayerIndex ? { boxShadow: "0 2px 10px rgba(196,30,58,0.3)" } : {}}
-            >
-              <p className={`font-body text-[12px] ${
-                index === currentPlayerIndex ? 'text-[#FFF8DC]' : 'text-[#52796F]'
-              }`}>
-                {player.name}
-              </p>
-              <p className={`font-heading text-[20px] font-bold ${
-                index === currentPlayerIndex 
-                  ? 'text-[#FFF8DC]' 
-                  : player.score >= 0 ? 'text-[#165B33]' : 'text-[#C41E3A]'
-              }`}>
-                {player.score}
-              </p>
-            </div>
-          ))}
-        </div>
+          {/* Scoreboard */}
+          <div className="px-4 py-4 flex items-center justify-center gap-4 bg-qtc-charcoal/80 border-b border-qtc-brass/30">
+            {players.map((player, index) => (
+              <GaugePanel
+                key={player.name}
+                label={player.name}
+                value={player.score}
+                unit="pts"
+                className={index === currentPlayerIndex ? 'border-qtc-holiday-red shadow-glow-orange' : ''}
+              />
+            ))}
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center px-6 py-8">
-          <h1 className="font-heading text-[32px] font-bold text-[#165B33] text-center">
-            {currentPlayer?.name}, pick a category
-          </h1>
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center px-6 py-8">
+            <HolidayGarland className="mb-6" />
+            
+            <h1 className="font-heading text-[32px] font-bold text-qtc-brass-light text-center">
+              {currentPlayer?.name}, pick a category
+            </h1>
 
-          {/* Category buttons with personality callouts */}
-          <div className="mt-8 w-full max-w-[500px] space-y-3">
-            {categories.map((category) => {
-              const exhausted = isCategoryExhausted(category.name);
-              const questionsLeft = getAvailablePoints(category.name).length;
-              const isCached = questionCache.has(category.name);
-              const displayName = getDisplayCategory(category.name);
-              const callout = getCategoryCallout(category.name, category.expert);
-              
-              return (
-                <button
-                  key={category.name}
-                  onClick={() => handleCategorySelect(category.name)}
-                  disabled={exhausted}
-                  className={`
-                    w-full p-5 rounded-2xl text-left
-                    transition-all duration-150 ease-out
-                    ${exhausted
-                      ? 'bg-[#E8E4D9] cursor-not-allowed opacity-60'
-                      : 'bg-[#C41E3A] cursor-pointer hover:bg-[#A91830] active:scale-[0.98] shadow-lg'
-                    }
-                  `}
-                  style={!exhausted ? { boxShadow: "0 4px 15px rgba(196,30,58,0.25)" } : {}}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className={`font-heading text-[18px] font-bold ${
-                        exhausted ? 'text-[#52796F]' : 'text-[#FFF8DC]'
-                      }`}>
-                        {displayName.toUpperCase()}
-                      </p>
-                      <p className={`mt-1 font-body text-[14px] ${
-                        exhausted ? 'text-[#52796F]/60' : 'text-[#FFF8DC]/80'
-                      }`}>
-                        {category.expert}&apos;s expertise • {questionsLeft} left
-                      </p>
-                      {/* Personality callout - only show if we don't have a fun display name yet */}
-                      {!exhausted && displayName === category.name && (
-                        <p className="mt-2 font-body text-[12px] text-[#D4AF37] italic">
-                          &ldquo;{callout}&rdquo;
+            {/* Category buttons with personality callouts */}
+            <div className="mt-8 w-full max-w-[500px] space-y-3">
+              {categories.map((category) => {
+                const exhausted = isCategoryExhausted(category.name);
+                const questionsLeft = getAvailablePoints(category.name).length;
+                const isCached = questionCache.has(category.name);
+                const displayName = getDisplayCategory(category.name);
+                const callout = getCategoryCallout(category.name, category.expert);
+                
+                return (
+                  <button
+                    key={category.name}
+                    onClick={() => handleCategorySelect(category.name)}
+                    disabled={exhausted}
+                    className={`
+                      w-full p-5 rounded-xl text-left
+                      transition-all duration-150 ease-out
+                      ${exhausted
+                        ? 'bg-qtc-slate cursor-not-allowed opacity-60 border-2 border-qtc-slate'
+                        : 'bg-holiday-gradient cursor-pointer hover:opacity-90 active:scale-[0.98] border-2 border-qtc-holiday-gold/40 shadow-deep'
+                      }
+                    `}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className={`font-heading text-[18px] font-bold ${
+                          exhausted ? 'text-qtc-copper' : 'text-qtc-cream'
+                        }`}>
+                          {displayName.toUpperCase()}
                         </p>
+                        <p className={`mt-1 font-body text-[14px] ${
+                          exhausted ? 'text-qtc-copper/60' : 'text-qtc-cream/80'
+                        }`}>
+                          {category.expert}&apos;s expertise • {questionsLeft} left
+                        </p>
+                        {/* Personality callout */}
+                        {!exhausted && displayName === category.name && (
+                          <p className="mt-2 font-body text-[12px] text-qtc-brass italic">
+                            &ldquo;{callout}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                      {isCached && !exhausted && (
+                        <span className="text-[10px] bg-qtc-brass text-qtc-black px-2 py-1 rounded-full font-bold ml-2">
+                          READY
+                        </span>
                       )}
                     </div>
-                    {isCached && !exhausted && (
-                      <span className="text-[10px] bg-[#D4AF37] text-[#165B33] px-2 py-1 rounded-full font-bold ml-2">
-                        READY
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
   // ═══════════════════════════════════════════════════════════
-  // SCREEN 7: POINT VALUE SELECTION
+  // SCREEN: POINT VALUE SELECTION
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'point-select' && selectedCategory) {
     const availablePoints = getAvailablePoints(selectedCategory);
     const displayName = getDisplayCategory(selectedCategory);
     
     return (
-      <main className="min-h-screen flex flex-col animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        {/* Header */}
-        <div className="w-full py-3 bg-[#165B33] text-center shadow-md">
-          <p className="font-heading text-[16px] font-bold text-[#FFF8DC] uppercase tracking-wider">
-            {displayName}
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          {/* Personality header */}
-          <p className="font-body text-[16px] text-[#D4AF37] italic text-center mb-2">
-            Alright {currentPlayer?.name}, how brave are we feeling?
-          </p>
-          
-          <h1 className="font-heading text-[32px] font-bold text-[#165B33] text-center">
-            Pick your point value
-          </h1>
-
-          {/* Point buttons with personality */}
-          <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-[400px]">
-            {[100, 200, 300, 400].map((points) => {
-              const available = availablePoints.includes(points);
-              const { label, subtitle } = pointDescriptions[points];
-              
-              return (
-                <button
-                  key={points}
-                  onClick={() => handlePointSelect(points)}
-                  disabled={!available}
-                  className={`
-                    py-6 px-4 rounded-2xl flex flex-col items-center
-                    transition-all duration-150 ease-out
-                    ${available
-                      ? 'bg-[#D4AF37] text-[#165B33] cursor-pointer hover:bg-[#C9A227] active:scale-[0.98] shadow-lg'
-                      : 'bg-[#E8E4D9] text-[#52796F] cursor-not-allowed opacity-60'
-                    }
-                  `}
-                  style={available ? { boxShadow: "0 4px 15px rgba(212,175,55,0.35)" } : {}}
-                >
-                  <span className="font-heading text-[36px] font-bold">{label}</span>
-                  {available && (
-                    <span className="font-body text-[12px] opacity-80 mt-1">{subtitle}</span>
-                  )}
-                </button>
-              );
-            })}
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <div className="w-full py-3 bg-holiday-gradient text-center shadow-deep">
+            <p className="font-heading text-[16px] font-bold text-qtc-cream uppercase tracking-wider">
+              {displayName}
+            </p>
           </div>
 
-          {/* Back button */}
-          <button
-            onClick={() => {
-              setSelectedCategory(null);
-              setGamePhase('category-select');
-            }}
-            className="mt-8 px-6 py-3 bg-transparent text-[#52796F] font-body text-[16px] cursor-pointer hover:text-[#165B33] transition-colors"
-          >
-            ← Back to Categories
-          </button>
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <HolidayGarland className="mb-6" />
+            
+            {/* Personality header */}
+            <p className="font-body text-[16px] text-qtc-brass italic text-center mb-2">
+              Alright {currentPlayer?.name}, how brave are we feeling?
+            </p>
+            
+            <h1 className="font-heading text-[32px] font-bold text-qtc-brass-light text-center">
+              Pick your point value
+            </h1>
+
+            {/* Point buttons with personality */}
+            <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-[400px]">
+              {[100, 200, 300, 400].map((points) => {
+                const available = availablePoints.includes(points);
+                const { label, subtitle } = pointDescriptions[points];
+                
+                return (
+                  <BrassButton
+                    key={points}
+                    variant={available ? "primary" : "secondary"}
+                    size="lg"
+                    onClick={() => handlePointSelect(points)}
+                    disabled={!available}
+                    className="flex flex-col items-center py-6"
+                  >
+                    <span className="font-heading text-[36px] font-bold">{label}</span>
+                    {available && (
+                      <span className="font-body text-[12px] opacity-80 mt-1">{subtitle}</span>
+                    )}
+                  </BrassButton>
+                );
+              })}
+            </div>
+
+            {/* Back button */}
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setGamePhase('category-select');
+              }}
+              className="mt-8 px-6 py-3 bg-transparent text-qtc-copper font-body text-[16px] cursor-pointer hover:text-qtc-brass transition-colors"
+            >
+              ← Back to Categories
+            </button>
+          </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
   // ═══════════════════════════════════════════════════════════
-  // SCREEN 8: QUESTION DISPLAY - INTEGRATED FLOW
+  // SCREEN: QUESTION DISPLAY
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'question' && currentQuestion && selectedCategory && selectedDifficulty) {
     const expert = getCategoryExpert(selectedCategory);
     const showStealButton = expert && expert !== currentPlayer?.name;
     const stealPointValue = Math.floor(selectedDifficulty / 2);
-    // Use displayCategory from the question if available, otherwise fall back to state
     const displayName = currentQuestion.displayCategory || getDisplayCategory(selectedCategory);
     
     return (
-      <main className="min-h-screen flex flex-col animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        {/* Header */}
-        <div className="w-full py-3 bg-[#165B33] text-center shadow-md">
-          <p className="font-heading text-[16px] font-bold text-[#FFF8DC] uppercase tracking-wider">
-            {displayName} — {selectedDifficulty}
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-          {/* Question card - integrated narrative flow */}
-          <div className="w-full max-w-[500px] p-8 bg-white rounded-3xl shadow-xl" style={{ boxShadow: "0 8px 30px rgba(196,30,58,0.15)" }}>
-            {/* Line 1: Player name + question text */}
-            <p className="text-[24px] font-semibold text-[#165B33] leading-relaxed">
-              <span className="font-bold">{currentPlayer?.name}</span>, {currentQuestion.questionText}
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <div className="w-full py-3 bg-qtc-holiday-green text-center shadow-deep">
+            <p className="font-heading text-[16px] font-bold text-qtc-cream uppercase tracking-wider">
+              {displayName} — {selectedDifficulty}
             </p>
-            
-            {/* Line 2: "What's your best guess?" + range text */}
-            {currentQuestion.rangeText && (
-              <p className="mt-4 text-[18px] font-medium text-[#D4AF37] leading-relaxed">
-                What&apos;s your best guess? {currentQuestion.rangeText}
-              </p>
-            )}
-
-            {/* Divider before steal section */}
-            {showStealButton && (
-              <>
-                <div className="mt-6 mb-6 w-full h-[1px] bg-[#E8E4D9]" />
-                
-                {/* Steal prompt - consistent styling, name flows naturally */}
-                <p className="text-[18px] text-[#52796F] leading-relaxed">
-                  <span className="font-semibold">{expert}</span>, before we see the truth, do you want to...
-                </p>
-              </>
-            )}
           </div>
 
-          {/* Buttons */}
-          <div className="mt-6 flex flex-col gap-3 w-full max-w-[400px]">
-            {showStealButton && (
-              <button
-                onClick={handleStealAttempt}
-                className="w-full py-4 bg-[#CD7F32] text-white font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#B8722D] active:scale-[0.98] shadow-lg"
-                style={{ boxShadow: "0 4px 15px rgba(205,127,50,0.35)" }}
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+            {/* Question card */}
+            <GameCard variant="brass" className="w-full max-w-[500px] mb-6">
+              {/* Line 1: Player name + question text */}
+              <p className="text-[24px] font-heading font-bold text-qtc-brass-light leading-relaxed">
+                <span className="text-qtc-holiday-red">{currentPlayer?.name}</span>, {currentQuestion.questionText}
+              </p>
+              
+              {/* Line 2: "What's your best guess?" + range text */}
+              {currentQuestion.rangeText && (
+                <p className="mt-4 text-[18px] font-body font-medium text-qtc-copper leading-relaxed">
+                  What&apos;s your best guess? {currentQuestion.rangeText}
+                </p>
+              )}
+
+              {/* Divider before steal section */}
+              {showStealButton && (
+                <>
+                  <div className="mt-6 mb-6 w-full h-[1px] bg-qtc-brass/30" />
+                  
+                  {/* Steal prompt */}
+                  <p className="text-[18px] font-body text-qtc-copper leading-relaxed">
+                    <span className="font-semibold text-qtc-brass-light">{expert}</span>, before we see the truth, do you want to...
+                  </p>
+                </>
+              )}
+            </GameCard>
+
+            {/* Buttons */}
+            <div className="flex flex-col gap-3 w-full max-w-[400px]">
+              {showStealButton && (
+                <BrassButton
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleStealAttempt}
+                  className="w-full"
+                >
+                  Steal for {stealPointValue} Points
+                </BrassButton>
+              )}
+              
+              <BrassButton
+                variant="holiday"
+                size="lg"
+                onClick={handleRevealAnswer}
+                className="w-full"
               >
-                Steal for {stealPointValue} Points
-              </button>
-            )}
-            
-            <button
-              onClick={handleRevealAnswer}
-              className="w-full py-4 bg-[#C41E3A] text-[#FFF8DC] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#A91830] active:scale-[0.98] shadow-lg"
-              style={{ boxShadow: "0 4px 15px rgba(196,30,58,0.35)" }}
-            >
-              Reveal the Answer
-            </button>
+                Reveal the Answer
+              </BrassButton>
+            </div>
           </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
   // ═══════════════════════════════════════════════════════════
-  // SCREEN 9: EXPERT STEAL PROMPT
+  // SCREEN: EXPERT STEAL PROMPT
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'steal' && expertName && stealPromptData) {
-    // Combine title and subtitle into one flowing sentence
     const fullPrompt = `${stealPromptData.title} ${stealPromptData.subtitle}`;
     
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        <div className="text-center max-w-[500px]">
-          <h1 className="font-heading text-[40px] font-bold text-[#165B33] leading-tight">
-            {fullPrompt}
-          </h1>
-        </div>
+      <SteampunkLayout variant="holiday">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6">
+          <HolidayGarland className="mb-8" />
+          
+          <div className="text-center max-w-[500px]">
+            <h1 className="font-heading text-[40px] font-bold text-qtc-brass-light leading-tight">
+              {fullPrompt}
+            </h1>
+          </div>
 
-        <button
-          onClick={handleRevealAnswer}
-          className="mt-12 px-12 py-5 bg-[#C41E3A] text-[#FFF8DC] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#A91830] active:scale-[0.98] shadow-lg"
-          style={{ boxShadow: "0 4px 20px rgba(196,30,58,0.35)" }}
-        >
-          What&apos;s the real answer?
-        </button>
-      </main>
+          <BrassButton
+            variant="holiday"
+            size="lg"
+            onClick={handleRevealAnswer}
+            className="mt-12"
+          >
+            What&apos;s the real answer?
+          </BrassButton>
+        </div>
+      </SteampunkLayout>
     );
   }
 
   // ═══════════════════════════════════════════════════════════
-  // SCREEN 10: COMBINED ANSWER REVEAL + SCORING SELECTION
+  // SCREEN: COMBINED ANSWER REVEAL + SCORING SELECTION
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'scoring' && currentQuestion && currentPlayer) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-8 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        {/* Answer Section */}
-        <div className="bg-white rounded-3xl p-8 shadow-xl w-full max-w-[500px]" style={{ boxShadow: "0 8px 30px rgba(212,175,55,0.2)" }}>
-          <p className="font-body text-[14px] text-[#D4AF37] uppercase tracking-wider text-center font-semibold">
-            The Answer
-          </p>
+      <SteampunkLayout variant="holiday">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 py-8">
+          <HolidayGarland className="mb-6" />
           
-          <h1 className="mt-4 font-heading text-[42px] font-bold text-[#165B33] text-center">
-            {currentQuestion.answer.display}
-          </h1>
-          
-          {currentQuestion.answer.acceptable && currentQuestion.answer.acceptable.length > 0 && (
-            <p className="mt-3 font-body text-[14px] text-[#52796F] text-center">
-              Also accept: {currentQuestion.answer.acceptable.slice(0, 3).join(', ')}
+          {/* Answer Section */}
+          <GameCard variant="brass" className="w-full max-w-[500px] mb-6">
+            <p className="font-mono text-[14px] text-qtc-copper uppercase tracking-wider text-center font-semibold mb-4">
+              The Answer
             </p>
-          )}
-        </div>
+            
+            <h1 className="font-heading text-[42px] font-bold text-qtc-brass-light text-center">
+              {currentQuestion.answer.display}
+            </h1>
+            
+            {currentQuestion.answer.acceptable && currentQuestion.answer.acceptable.length > 0 && (
+              <p className="mt-3 font-body text-[14px] text-qtc-copper text-center">
+                Also accept: {currentQuestion.answer.acceptable.slice(0, 3).join(', ')}
+              </p>
+            )}
+          </GameCard>
 
-        {/* Divider */}
-        <div className="mt-6 w-[60px] h-[3px] bg-[#D4AF37] rounded-full" />
+          {/* Divider */}
+          <div className="w-[60px] h-[3px] bg-qtc-brass rounded-full" />
 
-        {/* Scoring commentary - personality */}
-        <p className="mt-4 font-body text-[16px] text-[#D4AF37] italic text-center">
-          {scoringCommentary}
-        </p>
+          {/* Scoring commentary */}
+          <p className="mt-4 font-body text-[16px] text-qtc-brass italic text-center">
+            {scoringCommentary}
+          </p>
 
-        {/* Scoring Section */}
-        <h2 className="mt-4 font-heading text-[24px] font-bold text-[#165B33] text-center">
-          Who got it right?
-        </h2>
+          {/* Scoring Section */}
+          <h2 className="mt-4 font-heading text-[24px] font-bold text-qtc-brass-light text-center">
+            Who got it right?
+          </h2>
 
-        <div className="mt-6 flex flex-col gap-3 w-full max-w-[400px]">
-          {/* Original player button */}
-          <button
-            onClick={() => handleScoreSelection('original')}
-            className="w-full py-5 bg-[#165B33] text-[#FFF8DC] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#0D4A28] active:scale-[0.98] shadow-lg"
-            style={{ boxShadow: "0 4px 15px rgba(22,91,51,0.35)" }}
-          >
-            {currentPlayer.name} ✓
-          </button>
-
-          {/* Expert button (only if steal was attempted) */}
-          {stealAttempted && expertName && (
-            <button
-              onClick={() => handleScoreSelection('expert')}
-              className="w-full py-5 bg-[#D4AF37] text-[#165B33] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#C9A227] active:scale-[0.98] shadow-lg"
-              style={{ boxShadow: "0 4px 15px rgba(212,175,55,0.35)" }}
+          <div className="mt-6 flex flex-col gap-3 w-full max-w-[400px]">
+            {/* Original player button */}
+            <BrassButton
+              variant="holiday"
+              size="lg"
+              onClick={() => handleScoreSelection('original')}
+              className="w-full"
             >
-              {expertName} stole it ✓
-            </button>
-          )}
+              {currentPlayer.name} ✓
+            </BrassButton>
 
-          {/* No one button */}
-          <button
-            onClick={() => handleScoreSelection('nobody')}
-            className="w-full py-5 bg-[#C41E3A] text-[#FFF8DC] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#A91830] active:scale-[0.98] shadow-lg"
-            style={{ boxShadow: "0 4px 15px rgba(196,30,58,0.35)" }}
-          >
-            No one got it ✗
-          </button>
+            {/* Expert button (only if steal was attempted) */}
+            {stealAttempted && expertName && (
+              <BrassButton
+                variant="primary"
+                size="lg"
+                onClick={() => handleScoreSelection('expert')}
+                className="w-full"
+              >
+                {expertName} stole it ✓
+              </BrassButton>
+            )}
+
+            {/* No one button */}
+            <BrassButton
+              variant="secondary"
+              size="lg"
+              onClick={() => handleScoreSelection('nobody')}
+              className="w-full"
+            >
+              No one got it ✗
+            </BrassButton>
+          </div>
         </div>
-      </main>
+      </SteampunkLayout>
     );
   }
 
   // Fallback for steal without prompt data
   if (gamePhase === 'steal' && expertName) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 animate-fadeIn" style={{ background: "linear-gradient(180deg, #FFF8DC 0%, #E8E4D9 100%)" }}>
-        <div className="text-center max-w-[500px]">
-          <h1 className="font-heading text-[40px] font-bold text-[#165B33] leading-tight">
-            {expertName}, show us what you got!
-          </h1>
-        </div>
+      <SteampunkLayout variant="holiday">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6">
+          <HolidayGarland className="mb-8" />
+          
+          <div className="text-center max-w-[500px]">
+            <h1 className="font-heading text-[40px] font-bold text-qtc-brass-light leading-tight">
+              {expertName}, show us what you got!
+            </h1>
+          </div>
 
-        <button
-          onClick={handleRevealAnswer}
-          className="mt-12 px-12 py-5 bg-[#C41E3A] text-[#FFF8DC] font-body text-lg font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:bg-[#A91830] active:scale-[0.98] shadow-lg"
-        >
-          What&apos;s the real answer?
-        </button>
-      </main>
+          <BrassButton
+            variant="holiday"
+            size="lg"
+            onClick={handleRevealAnswer}
+            className="mt-12"
+          >
+            What&apos;s the real answer?
+          </BrassButton>
+        </div>
+      </SteampunkLayout>
     );
   }
 
