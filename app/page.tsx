@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { SteampunkLayout, BrassButton } from '@/components/ui/qtc-components';
 
 type IntroPhase = 'studio' | 'title' | 'redirect' | 'main';
 
@@ -97,89 +98,89 @@ export default function Home() {
   // INTRO SEQUENCE
   if (introPhase === 'studio' || introPhase === 'title') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
-        {introPhase === 'studio' && (
-          <div 
-            className="flex flex-col items-center justify-center"
-            style={{ 
-              opacity,
-              transition: isFadingOut ? 'opacity 0.5s ease-in-out' : 'opacity 1s ease-in-out'
-            }}
-          >
-            <h1 className="font-heading text-[56px] font-bold text-[#F0EEE9] tracking-tight select-none">
-              The Quality Time Co.
-            </h1>
-            <p className="mt-2 font-body text-[14px] text-[#9B9388] lowercase select-none">
-              presents
-            </p>
-          </div>
-        )}
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex flex-col items-center justify-center">
+          {introPhase === 'studio' && (
+            <div 
+              className="flex flex-col items-center justify-center"
+              style={{ 
+                opacity,
+                transition: isFadingOut ? 'opacity 0.5s ease-in-out' : 'opacity 1s ease-in-out'
+              }}
+            >
+              <h1 className="font-heading text-[56px] font-bold text-qtc-cream tracking-tight select-none">
+                The Quality Time Co.
+              </h1>
+              <p className="mt-2 font-body text-[14px] text-qtc-copper lowercase select-none">
+                presents
+              </p>
+            </div>
+          )}
 
-        {introPhase === 'title' && (
-          <div 
-            className="flex flex-col items-center justify-center"
-            style={{ 
-              opacity,
-              transition: isFadingOut ? 'opacity 0.5s ease-in-out' : 'opacity 0.8s ease-in-out'
-            }}
-          >
-            <h1 className="font-heading text-[36px] font-bold text-[#F0EEE9] tracking-tight select-none text-center">
-              Any Questions?
-            </h1>
-            <p className="mt-4 font-body text-[16px] text-[#9B9388] select-none text-center">
-              The perfect game. Every time.
-            </p>
-          </div>
-        )}
-      </main>
+          {introPhase === 'title' && (
+            <div 
+              className="flex flex-col items-center justify-center"
+              style={{ 
+                opacity,
+                transition: isFadingOut ? 'opacity 0.5s ease-in-out' : 'opacity 0.8s ease-in-out'
+              }}
+            >
+              <h1 className="font-heading text-[36px] font-bold text-qtc-brass-light tracking-tight select-none text-center">
+                Any Questions?
+              </h1>
+              <p className="mt-4 font-body text-[16px] text-qtc-copper select-none text-center">
+                The perfect game. Every time.
+              </p>
+            </div>
+          )}
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // BLANK SCREEN DURING REDIRECT
   if (introPhase === 'redirect') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C]" />
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen" />
+      </SteampunkLayout>
     );
   }
 
   // MAIN SCREEN (shown if intro was already shown or skipped)
   return (
-    <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center relative animate-fadeIn">
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center animate-slideUp">
-        {/* Heading */}
-        <h1 className="font-heading text-[52px] font-bold text-[#F0EEE9] tracking-tight select-none">
-          THE QUALITY TIME CO.
-        </h1>
-        
-        {/* Decorative line */}
-        <div className="mt-4 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
+    <SteampunkLayout variant="dark" showGears={true}>
+      <main className="min-h-screen flex flex-col items-center justify-center relative animate-fadeIn">
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center animate-slideUp">
+          {/* Heading */}
+          <h1 className="font-heading text-[52px] font-bold text-qtc-brass-light tracking-tight select-none">
+            THE QUALITY TIME CO.
+          </h1>
+          
+          {/* Decorative line */}
+          <div className="mt-4 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
 
-        {/* Primary Button */}
+          {/* Primary Button */}
+          <BrassButton
+            onClick={handleStart}
+            variant={isTestingMode ? "primary" : "holiday"}
+            size="lg"
+            className="mt-[120px]"
+          >
+            {isTestingMode ? 'QUICK TEST MODE' : 'START NEW GAME'}
+          </BrassButton>
+        </div>
+
+        {/* Testing Mode Toggle */}
         <button
-          onClick={handleStart}
-          className={`mt-[120px] px-12 py-5 font-body text-lg font-bold rounded cursor-pointer transition-all duration-150 ease-out hover:opacity-90 select-none ${
-            isTestingMode 
-              ? 'bg-[#D4A574] text-[#1F1E1C]' 
-              : 'bg-[#F0EEE9] text-[#1F1E1C]'
-          }`}
-          style={{ borderRadius: "8px" }}
-          aria-label={isTestingMode ? 'Start quick test mode' : 'Start new game'}
+          onClick={toggleTestingMode}
+          className="absolute bottom-6 left-6 font-body text-[12px] text-qtc-copper cursor-pointer hover:text-qtc-brass transition-colors select-none"
+          aria-label="Toggle testing mode"
         >
-          {isTestingMode ? 'QUICK TEST MODE' : 'START NEW GAME'}
+          🔧 Testing Mode
         </button>
-      </div>
-
-      {/* Testing Mode Toggle */}
-      <button
-        onClick={toggleTestingMode}
-        className="absolute bottom-6 left-6 font-body text-[12px] text-[#9B9388] cursor-pointer hover:text-[#F0EEE9] transition-colors select-none"
-        aria-label="Toggle testing mode"
-      >
-        🔧 Testing Mode
-      </button>
-    </main>
+      </main>
+    </SteampunkLayout>
   );
 }
-
-

@@ -14,7 +14,7 @@ import Loading from '@/components/Loading';
 import EmptyState from '@/components/EmptyState';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import PlayersGuard from '@/components/PlayersGuard';
+import { SteampunkLayout, BrassButton, GameCard, Gear } from '@/components/ui/qtc-components';
 
 interface PlayerData {
   name: string;
@@ -37,7 +37,7 @@ const games: Game[] = [
     title: "THAT'S SO YOU",
     oneLiner: 'Part roast, part love letter',
     exampleTemplate: 'If {player1} were a drunk Amazon purchase...',
-    accentColor: '#D4A574', // Warm amber
+    accentColor: '#D4AF37', // Using brass from design system
     minPlayers: 4,
   },
   {
@@ -45,7 +45,7 @@ const games: Game[] = [
     title: 'MOST LIKELY TO',
     oneLiner: "By round three, you're learning things you can't unlearn",
     exampleTemplate: "Who's most likely to start a cult by accident?",
-    accentColor: '#6BA5A5', // Soft teal
+    accentColor: '#CD7F32', // Using copper from design system
     minPlayers: 4,
   },
   {
@@ -53,7 +53,7 @@ const games: Game[] = [
     title: 'COME THRU',
     oneLiner: 'Trust dynamics get exposed',
     exampleTemplate: 'You got arrested at Costco. Who do you call?',
-    accentColor: '#E07A5F', // Coral/salmon
+    accentColor: '#FF6B35', // Using orange from design system
     minPlayers: 4,
   },
   {
@@ -61,14 +61,14 @@ const games: Game[] = [
     title: 'NO PRESSURE',
     oneLiner: "Everyone knows Charades. No one has played with these clues.",
     exampleTemplate: 'Act out: parallel parking with your ex watching',
-    accentColor: '#81B29A', // Bright green
+    accentColor: '#2A9D8F', // Using teal from design system
   },
   {
     id: 'trivia',
     title: 'TRIVIA',
     oneLiner: "Trivia built around who's playing, not what's popular",
     exampleTemplate: "We're quizzing {player} on {expertise} — steal points if they choke",
-    accentColor: '#9A8BC4', // Soft purple
+    accentColor: '#B87333', // Using bronze from design system
   },
 ];
 
@@ -205,151 +205,155 @@ function GamesContent({ players: guardPlayers }: { players: Player[] }) {
   };
 
   if (isLoading) {
-    return <Loading />;
+    return (
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
+    );
+  }
+
+  if (players.length === 0) {
+    return (
+      <SteampunkLayout variant="dark">
+        <EmptyState
+          icon="👥"
+          title="No Players Found"
+          message="Need at least 3 players to start a game"
+          actionLabel="Go to Setup"
+          onAction={() => router.push('/setup')}
+        />
+      </SteampunkLayout>
+    );
   }
 
   const canContinue = selectedGames.size >= 1;
 
   return (
-    <main className="min-h-screen bg-[#1F1E1C] flex flex-col animate-fadeIn">
-      {/* Header */}
-      <div className="flex flex-col items-center pt-8 pb-4 px-6">
-        <h1 className="font-heading text-[32px] font-bold text-[#F0EEE9] tracking-tight select-none">
-          PICK YOUR GAMES
-        </h1>
-        <p className="mt-1 font-body text-[12px] text-[#9B9388]">
-          Tap to select • Play one or play them all
-        </p>
-      </div>
-
-      {/* Games Grid - All games visible at once */}
-      <div className="flex-1 px-4 pb-4 overflow-y-auto">
-        <div className="grid grid-cols-1 gap-3 max-w-[600px] mx-auto">
-          {games.map((game) => {
-            const isSelected = selectedGames.has(game.id);
-            const minPlayers = game.minPlayers || 3;
-            const hasEnoughPlayers = players.length >= minPlayers;
-            const isDisabled = !hasEnoughPlayers && !isSelected;
-
-            return (
-              <button
-                key={game.id}
-                onClick={() => toggleGame(game.id)}
-                disabled={isDisabled}
-                className={`
-                  w-full rounded-xl p-4 text-left relative
-                  transition-all duration-200 ease-out
-                  select-none
-                  ${isSelected
-                    ? 'bg-[#2D2B28]'
-                    : 'bg-[#2D2B28] hover:bg-[#2D2B28]/80'
-                  }
-                  ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                style={{
-                  minHeight: '160px',
-                  borderLeft: `4px solid ${game.accentColor}`,
-                  boxShadow: isSelected 
-                    ? `0 0 20px ${game.accentColor}30, 0 4px 12px rgba(0,0,0,0.3)`
-                    : '0 2px 8px rgba(0,0,0,0.2)'
-                }}
-                aria-label={
-                  isSelected 
-                    ? `Remove ${game.title}` 
-                    : isDisabled
-                    ? `${game.title} requires ${minPlayers}+ players`
-                    : `Add ${game.title}`
-                }
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    {/* Game title */}
-                    <h2 className="font-heading text-[20px] font-bold text-[#F0EEE9] leading-tight">
-                      {game.title}
-                    </h2>
-
-                    {/* One-liner - prominent hook in accent color */}
-                    <p 
-                      className="mt-2 font-body text-[14px] leading-snug"
-                      style={{ color: game.accentColor }}
-                    >
-                      {game.oneLiner}
-                    </p>
-
-                    {/* Example - smaller gray text */}
-                    <p className="mt-2 font-body text-[12px] text-[#9B9388] italic leading-relaxed">
-                      &ldquo;{getExampleText(game.exampleTemplate)}&rdquo;
-                    </p>
-
-                    {/* Min players warning */}
-                    {!hasEnoughPlayers && (
-                      <p className="mt-2 font-body text-[11px] text-[#D4A574]">
-                        Needs {minPlayers}+ players
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Checkmark indicator */}
-                  <div 
-                    className={`
-                      flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
-                      transition-all duration-200
-                      ${isSelected
-                        ? 'border-transparent'
-                        : 'border-[#9B9388] bg-transparent'
-                      }
-                    `}
-                    style={{
-                      backgroundColor: isSelected ? game.accentColor : 'transparent',
-                      borderColor: isSelected ? game.accentColor : '#9B9388'
-                    }}
-                  >
-                    {isSelected && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1E1C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+    <SteampunkLayout variant="dark" showGears={true}>
+      <main className="min-h-screen flex flex-col animate-fadeIn">
+        {/* Header */}
+        <div className="flex flex-col items-center pt-8 pb-4 px-6">
+          <h1 className="font-heading text-[32px] font-bold text-qtc-brass-light tracking-tight select-none">
+            PICK YOUR GAMES
+          </h1>
+          <p className="mt-1 font-body text-[12px] text-qtc-copper">
+            Tap to select • Play one or play them all
+          </p>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div className="px-6 pb-6 pt-2">
-             <button
-                 onClick={handleContinue}
-                 disabled={!canContinue}
-                 className={`
-                   w-full h-14 font-body text-[18px] font-bold rounded cursor-pointer
-                   transition-all duration-150 ease-out select-none
-                   ${canContinue
-                     ? 'bg-[#F0EEE9] text-[#1F1E1C] hover:opacity-90'
-                     : 'bg-transparent border-2 border-[#9B9388] text-[#9B9388] cursor-not-allowed'
-                   }
-                 `}
-                 style={{ borderRadius: '8px' }}
-                 aria-label={canContinue ? `Start playing ${selectedGames.size} game${selectedGames.size > 1 ? 's' : ''}` : 'Select at least one game'}
-               >
-                 {canContinue
-                   ? `PLAY ${selectedGames.size} ${selectedGames.size === 1 ? 'GAME' : 'GAMES'}`
-                   : 'SELECT A GAME TO START'
-                 }
-               </button>
-      </div>
+        {/* Games Grid - All games visible at once */}
+        <div className="flex-1 px-4 pb-4 overflow-y-auto">
+          <div className="grid grid-cols-1 gap-3 max-w-[600px] mx-auto">
+            {games.map((game) => {
+              const isSelected = selectedGames.has(game.id);
+              const minPlayers = game.minPlayers || 3;
+              const hasEnoughPlayers = players.length >= minPlayers;
+              const isDisabled = !hasEnoughPlayers && !isSelected;
 
-      {/* Toast notifications */}
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
-    </main>
+              return (
+                <button
+                  key={game.id}
+                  onClick={() => toggleGame(game.id)}
+                  disabled={isDisabled}
+                  className={`
+                    w-full rounded-xl p-4 text-left relative
+                    transition-all duration-200 ease-out
+                    select-none
+                    ${isSelected
+                      ? 'bg-qtc-charcoal border-2 border-qtc-brass shadow-brass'
+                      : 'bg-qtc-charcoal border-2 border-qtc-slate hover:border-qtc-brass/50'
+                    }
+                    ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                  aria-label={
+                    isSelected 
+                      ? `Remove ${game.title}` 
+                      : isDisabled
+                      ? `${game.title} requires ${minPlayers}+ players`
+                      : `Add ${game.title}`
+                  }
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      {/* Game title */}
+                      <h2 className="font-heading text-[20px] font-bold text-qtc-brass-light leading-tight">
+                        {game.title}
+                      </h2>
+
+                      {/* One-liner - prominent hook in accent color */}
+                      <p 
+                        className="mt-2 font-body text-[14px] leading-snug"
+                        style={{ color: game.accentColor }}
+                      >
+                        {game.oneLiner}
+                      </p>
+
+                      {/* Example - smaller gray text */}
+                      <p className="mt-2 font-body text-[12px] text-qtc-copper italic leading-relaxed">
+                        &ldquo;{getExampleText(game.exampleTemplate)}&rdquo;
+                      </p>
+
+                      {/* Min players warning */}
+                      {!hasEnoughPlayers && (
+                        <p className="mt-2 font-body text-[11px] text-qtc-brass">
+                          Needs {minPlayers}+ players
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Checkmark indicator */}
+                    <div 
+                      className={`
+                        flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
+                        transition-all duration-200
+                        ${isSelected
+                          ? 'border-transparent bg-qtc-brass'
+                          : 'border-qtc-copper bg-transparent'
+                        }
+                      `}
+                    >
+                      {isSelected && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-qtc-black">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="px-6 pb-6 pt-2">
+          <BrassButton
+            onClick={handleContinue}
+            disabled={!canContinue}
+            variant={canContinue ? "holiday" : "secondary"}
+            size="lg"
+            className="w-full"
+          >
+            {canContinue
+              ? `PLAY ${selectedGames.size} ${selectedGames.size === 1 ? 'GAME' : 'GAMES'}`
+              : 'SELECT A GAME TO START'
+            }
+          </BrassButton>
+        </div>
+
+        {/* Toast notifications */}
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </main>
+    </SteampunkLayout>
   );
 }
 

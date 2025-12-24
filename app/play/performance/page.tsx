@@ -24,7 +24,8 @@ import {
   getCurrentGame,
   GameSession
 } from '@/app/lib/gameOrchestrator';
-import SessionGuard from '@/components/SessionGuard';
+import { SteampunkLayout, BrassButton, GameCard, GhostButton, Gear, GaugePanel, HolidayGarland } from '@/components/ui/qtc-components';
+import AnimatedScore from '@/components/AnimatedScore';
 
 interface PlayerData {
   name: string;
@@ -272,25 +273,29 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
 
   if (players.length === 0) {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex items-center justify-center">
-        <p className="font-body text-[16px] text-[#9B9388]">Loading...</p>
-      </main>
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
     );
   }
 
   // TRANSITION SCREEN
   if (phase === 'transition') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center">
-        <div className="text-center animate-fadeInScale">
-          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
-            NO PRESSURE
-          </h1>
-          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
-            (There&apos;s definitely pressure)
-          </p>
-        </div>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex flex-col items-center justify-center">
+          <div className="text-center animate-fadeInScale">
+            <h1 className="font-heading text-[48px] font-bold text-qtc-brass-light">
+              NO PRESSURE
+            </h1>
+            <p className="mt-4 font-body text-[16px] text-qtc-copper">
+              (There&apos;s definitely pressure)
+            </p>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -298,81 +303,92 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
   if (phase === 'handoff') {
     const nextPerformer = players[performerIndex];
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <div className="text-center animate-fadeInScale">
-          <h1 className="font-heading text-[48px] font-bold text-[#F0EEE9]">
-            {nextPerformer?.name.toUpperCase()} IS UP NEXT
-          </h1>
-          <p className="mt-4 font-body text-[16px] text-[#9B9388]">
-            Pass the phone now
-          </p>
-          <button
-            onClick={startHandoff}
-            className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-          >
-            READY
-          </button>
-        </div>
-      </main>
+      <SteampunkLayout variant="dark">
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <div className="text-center animate-fadeInScale">
+            <h1 className="font-heading text-[48px] font-bold text-qtc-brass-light">
+              {nextPerformer?.name.toUpperCase()} IS UP NEXT
+            </h1>
+            <p className="mt-4 font-body text-[16px] text-qtc-copper">
+              Pass the phone now
+            </p>
+            <BrassButton
+              onClick={startHandoff}
+              variant="holiday"
+              size="lg"
+              className="mt-12"
+            >
+              READY
+            </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
   // SCREEN 1 - Type Announcement
   if (phase === 'announce') {
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#81B29A] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {performer?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        {/* Top bar with scores */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D2B28]">
-          <p className="font-body text-[12px] text-[#9B9388] uppercase tracking-wider">
-            Round {currentRound} of {players.length}
-          </p>
-          <div className="flex gap-4">
-            {scores.map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="font-body text-[11px] text-[#9B9388]">{s.name}</p>
-                <p className="font-heading text-[16px] font-bold text-[#D4A574]">{s.score}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <h1 className="mt-4 font-heading text-[32px] font-bold text-[#F0EEE9] text-center">
-            {actualPerformer?.name.toUpperCase()}, THE CLOCK IS ALREADY RUNNING
-          </h1>
-          
-          <div className="mt-8 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
-          
-          <p className="mt-8 font-body text-[16px] text-[#9B9388] text-center">
-            Act it out. Draw it. Hum it. No words allowed.
-          </p>
-          
-          {/* Escape hatch */}
-          <div className="mt-8 p-4 bg-[#2D2B28] rounded-xl max-w-[360px]">
-            <p className="font-body text-[14px] text-[#9B9388] text-center">
-              {ESCAPE_HATCH_TEXT}
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-teal-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {performer?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
             </p>
           </div>
-          
-          <p className="mt-8 font-heading text-[24px] font-bold text-[#F0EEE9]">
-            {performer.name.toUpperCase()}, YOU&apos;RE UP!
-          </p>
-          
-          <button
-            onClick={showClue}
-            className="mt-8 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-          >
-            SEE YOUR CLUE
-          </button>
-        </div>
-      </main>
+          {/* Top bar with scores */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-qtc-brass/30 bg-qtc-charcoal/80">
+            <p className="font-mono text-[12px] text-qtc-copper uppercase tracking-wider">
+              Round {currentRound} of {players.length}
+            </p>
+            <div className="flex gap-4">
+              {scores.map((s, i) => (
+                <GaugePanel
+                  key={i}
+                  label={s.name}
+                  value={s.score}
+                  unit="pts"
+                  className="scale-75"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <h1 className="mt-4 font-heading text-[32px] font-bold text-qtc-brass-light text-center">
+              {actualPerformer?.name.toUpperCase()}, THE CLOCK IS ALREADY RUNNING
+            </h1>
+            
+            <div className="mt-8 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
+            
+            <p className="mt-8 font-body text-[16px] text-qtc-copper text-center">
+              Act it out. Draw it. Hum it. No words allowed.
+            </p>
+            
+            {/* Escape hatch */}
+            <GameCard variant="dark" className="mt-8 max-w-[360px]">
+              <p className="font-body text-[14px] text-qtc-copper text-center">
+                {ESCAPE_HATCH_TEXT}
+              </p>
+            </GameCard>
+            
+            <p className="mt-8 font-heading text-[24px] font-bold text-qtc-brass-light">
+              {performer.name.toUpperCase()}, YOU&apos;RE UP!
+            </p>
+            
+            <BrassButton
+              onClick={showClue}
+              variant="holiday"
+              size="lg"
+              className="mt-8"
+            >
+              SEE YOUR CLUE
+            </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -381,65 +397,69 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
     const eligiblePassTargets = players.filter(p => p.name !== performer.name);
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#81B29A] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {(passedTo || performer.name).toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-        {/* Warning */}
-        <p className="font-body text-[14px] text-[#D4A574] uppercase tracking-wider">
-          Only {passedTo || performer.name} should see this!
-        </p>
-        
-        {/* Category badge */}
-        <p className="mt-6 font-body text-[12px] font-medium uppercase tracking-wider text-[#D4A574]">
-          {currentPrompt.category}
-        </p>
-        
-        {/* The clue */}
-        <div className="mt-4 p-8 bg-[#2D2B28] rounded-xl max-w-[400px]">
-          <p className="font-heading text-[32px] font-normal text-[#F0EEE9] text-center leading-relaxed">
-            {currentPrompt.clue}
-          </p>
-        </div>
-        
-        {/* Pass option (only if not already passed) */}
-        {!passedTo && (
-          <div className="mt-8">
-            <p className="font-body text-[14px] text-[#9B9388] text-center mb-4">
-              Don&apos;t know this? Pass to someone else:
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-teal-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {(passedTo || performer.name).toUpperCase()}&apos;S TURN — HOLD THE PHONE
             </p>
-            <div className="flex gap-3 flex-wrap justify-center">
-              {eligiblePassTargets.map((player, i) => (
-                <button
-                  key={i}
-                  onClick={() => passToSomeone(player.name)}
-                  className="px-4 py-2 bg-transparent border-2 border-[#9B9388] text-[#9B9388] rounded-lg font-body text-[14px] cursor-pointer hover:border-[#F0EEE9] hover:text-[#F0EEE9] transition-all"
-                >
-                  Pass to {player.name}
-                </button>
-              ))}
-            </div>
           </div>
-        )}
-        
-        {passedTo && (
-          <p className="mt-6 font-body text-[14px] text-[#D4A574]">
-            Passed! {passedTo} gets +1 point automatically.
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+          {/* Warning */}
+          <p className="font-mono text-[14px] text-qtc-brass uppercase tracking-wider">
+            Only {passedTo || performer.name} should see this!
           </p>
-        )}
-        
-        <button
-          onClick={startPerforming}
-          className="mt-8 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-        >
-          START PERFORMING
-        </button>
-        </div>
-      </main>
+          
+          {/* Category badge */}
+          <p className="mt-6 font-mono text-[12px] font-medium uppercase tracking-wider text-qtc-brass">
+            {currentPrompt.category}
+          </p>
+          
+          {/* The clue */}
+          <GameCard variant="teal" className="mt-4 max-w-[400px]">
+            <p className="font-heading text-[32px] font-normal text-qtc-cream text-center leading-relaxed">
+              {currentPrompt.clue}
+            </p>
+          </GameCard>
+          
+          {/* Pass option (only if not already passed) */}
+          {!passedTo && (
+            <div className="mt-8">
+              <p className="font-body text-[14px] text-qtc-copper text-center mb-4">
+                Don&apos;t know this? Pass to someone else:
+              </p>
+              <div className="flex gap-3 flex-wrap justify-center">
+                {eligiblePassTargets.map((player, i) => (
+                  <GhostButton
+                    key={i}
+                    onClick={() => passToSomeone(player.name)}
+                    className="px-4 py-2"
+                  >
+                    Pass to {player.name}
+                  </GhostButton>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {passedTo && (
+            <p className="mt-6 font-body text-[14px] text-qtc-brass">
+              Passed! {passedTo} gets +1 point automatically.
+            </p>
+          )}
+          
+          <BrassButton
+            onClick={startPerforming}
+            variant="holiday"
+            size="lg"
+            className="mt-8"
+          >
+            START PERFORMING
+          </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -450,73 +470,77 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
     const zone = getTimeZone();
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#81B29A] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {actualPerformer?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        {/* Top info */}
-        <div className="px-6 py-4 text-center border-b border-[#2D2B28]">
-          <p className="font-body text-[14px] text-[#9B9388]">
-            {actualPerformer?.name} is performing...
-          </p>
-          <p className="font-heading text-[20px] font-bold text-[#F0EEE9] mt-1">
-            EVERYONE ELSE: GUESS!
-          </p>
-        </div>
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-teal-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {actualPerformer?.name.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
+          </div>
+          {/* Top info */}
+          <div className="px-6 py-4 text-center border-b border-qtc-brass/30 bg-qtc-charcoal/80">
+            <p className="font-body text-[14px] text-qtc-copper">
+              {actualPerformer?.name} is performing...
+            </p>
+            <p className="font-heading text-[20px] font-bold text-qtc-brass-light mt-1">
+              EVERYONE ELSE: GUESS!
+            </p>
+          </div>
 
-        {/* Timer */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <p className={`font-mono text-[80px] font-bold ${
-            zone === 'fast' ? 'text-[#4A7C59]' :
-            zone === 'medium' ? 'text-[#D4A574]' :
-            'text-[#C45B4D]'
-          }`}>
-            {formatTime(timer)}
-          </p>
-          
-          {/* Progress bar with zones */}
-          <div className="mt-8 w-full max-w-[360px]">
-            <div className="flex rounded-lg overflow-hidden h-3">
-              <div 
-                className={`transition-all ${zone === 'fast' ? 'bg-[#4A7C59]' : 'bg-[#4A7C59]/30'}`}
-                style={{ width: `${(timing.fast / maxTime) * 100}%` }}
-              />
-              <div 
-                className={`transition-all ${zone === 'medium' ? 'bg-[#D4A574]' : 'bg-[#D4A574]/30'}`}
-                style={{ width: `${((timing.medium - timing.fast) / maxTime) * 100}%` }}
-              />
-              <div 
-                className={`transition-all ${zone === 'slow' ? 'bg-[#C45B4D]' : 'bg-[#C45B4D]/30'}`}
-                style={{ width: `${((timing.slow - timing.medium) / maxTime) * 100}%` }}
-              />
+          {/* Timer */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <p className={`font-mono text-[80px] font-bold ${
+              zone === 'fast' ? 'text-qtc-holiday-green' :
+              zone === 'medium' ? 'text-qtc-brass' :
+              'text-qtc-holiday-red'
+            }`}>
+              {formatTime(timer)}
+            </p>
+            
+            {/* Progress bar with zones */}
+            <div className="mt-8 w-full max-w-[360px]">
+              <div className="flex rounded-lg overflow-hidden h-3">
+                <div 
+                  className={`transition-all ${zone === 'fast' ? 'bg-qtc-holiday-green' : 'bg-qtc-holiday-green/30'}`}
+                  style={{ width: `${(timing.fast / maxTime) * 100}%` }}
+                />
+                <div 
+                  className={`transition-all ${zone === 'medium' ? 'bg-qtc-brass' : 'bg-qtc-brass/30'}`}
+                  style={{ width: `${((timing.medium - timing.fast) / maxTime) * 100}%` }}
+                />
+                <div 
+                  className={`transition-all ${zone === 'slow' ? 'bg-qtc-holiday-red' : 'bg-qtc-holiday-red/30'}`}
+                  style={{ width: `${((timing.slow - timing.medium) / maxTime) * 100}%` }}
+                />
+              </div>
+              
+              {/* Zone labels */}
+              <div className="flex mt-2 text-[12px] font-body">
+                <div className="text-qtc-holiday-green" style={{ width: `${(timing.fast / maxTime) * 100}%` }}>
+                  3pts
+                </div>
+                <div className="text-qtc-brass" style={{ width: `${((timing.medium - timing.fast) / maxTime) * 100}%` }}>
+                  2pts
+                </div>
+                <div className="text-qtc-holiday-red" style={{ width: `${((timing.slow - timing.medium) / maxTime) * 100}%` }}>
+                  1pt
+                </div>
+              </div>
             </div>
             
-            {/* Zone labels */}
-            <div className="flex mt-2 text-[12px] font-body">
-              <div className="text-[#4A7C59]" style={{ width: `${(timing.fast / maxTime) * 100}%` }}>
-                3pts
-              </div>
-              <div className="text-[#D4A574]" style={{ width: `${((timing.medium - timing.fast) / maxTime) * 100}%` }}>
-                2pts
-              </div>
-              <div className="text-[#C45B4D]" style={{ width: `${((timing.slow - timing.medium) / maxTime) * 100}%` }}>
-                1pt
-              </div>
-            </div>
+            {/* Guess button */}
+            <BrassButton
+              onClick={someoneGuessed}
+              variant="primary"
+              size="lg"
+              className="mt-12 w-full max-w-[360px] bg-qtc-holiday-green text-qtc-cream"
+            >
+              SOMEONE GUESSED IT!
+            </BrassButton>
           </div>
-          
-          {/* Guess button */}
-          <button
-            onClick={someoneGuessed}
-            className="mt-12 w-full max-w-[360px] py-6 bg-[#4A7C59] text-[#F0EEE9] font-heading text-[24px] font-bold rounded-xl cursor-pointer transition-all duration-150 ease-out hover:opacity-90 active:scale-[0.98] select-none"
-          >
-            SOMEONE GUESSED IT!
-          </button>
-        </div>
-      </main>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -529,77 +553,74 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
     const actualPerformerName = passedTo || performer.name;
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#81B29A] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {actualPerformerName.toUpperCase()}&apos;S TURN — HOLD THE PHONE
-          </p>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <p className="font-body text-[14px] text-[#4A7C59] uppercase tracking-wider">
-          Got it!
-        </p>
-        
-        <h1 className="mt-4 font-heading text-[28px] font-bold text-[#F0EEE9] text-center">
-          WHO GUESSED IT?
-        </h1>
-        
-        {/* Player buttons */}
-        <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-[320px]">
-          {eligibleGuessers.map((player, index) => (
-            <button
-              key={index}
-              onClick={() => selectGuesser(player.name)}
-              className={`
-                p-5 rounded-xl font-heading text-[18px] font-bold
-                transition-all duration-150 ease-out cursor-pointer active:scale-[0.96]
-                ${selectedGuesser === player.name
-                  ? 'bg-[#F0EEE9] text-[#1F1E1C]'
-                  : 'bg-[#2D2B28] text-[#F0EEE9] hover:bg-[#3D3B38]'
-                }
-              `}
-            >
-              {player.name}
-            </button>
-          ))}
-        </div>
-        
-        {/* Points preview */}
-        {selectedGuesser && (
-          <div className="mt-8 p-4 bg-[#2D2B28] rounded-xl">
-            <p className="font-body text-[14px] text-[#9B9388] text-center">
-              Time: {elapsedTime}s = {points} points each
+      <SteampunkLayout variant="holiday" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-holiday-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {actualPerformerName.toUpperCase()}&apos;S TURN — HOLD THE PHONE
             </p>
-            <div className="mt-4 flex gap-6 justify-center">
-              <div className="text-center">
-                <p className="font-body text-[12px] text-[#9B9388]">{actualPerformerName}</p>
-                <p className="font-heading text-[24px] font-bold text-[#D4A574]">+{points}</p>
-              </div>
-              <div className="text-center">
-                <p className="font-body text-[12px] text-[#9B9388]">{selectedGuesser}</p>
-                <p className="font-heading text-[24px] font-bold text-[#D4A574]">+{points}</p>
-              </div>
-            </div>
           </div>
-        )}
-        
-        <button
-          onClick={confirmSuccess}
-          disabled={!selectedGuesser}
-          className={`
-            mt-8 px-12 py-5 font-body text-lg font-bold rounded-lg cursor-pointer
-            transition-all duration-150 ease-out select-none
-            ${selectedGuesser
-              ? 'bg-[#F0EEE9] text-[#1F1E1C] hover:opacity-90 hover:scale-[0.98] active:scale-[0.96]'
-              : 'bg-transparent border-2 border-[#9B9388] text-[#9B9388] cursor-not-allowed'
-            }
-          `}
-        >
-          NEXT ROUND
-        </button>
-        </div>
-      </main>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <p className="font-mono text-[14px] text-qtc-holiday-green uppercase tracking-wider">
+            Got it!
+          </p>
+          
+          <h1 className="mt-4 font-heading text-[28px] font-bold text-qtc-brass-light text-center">
+            WHO GUESSED IT?
+          </h1>
+          
+          {/* Player buttons */}
+          <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-[320px]">
+            {eligibleGuessers.map((player, index) => (
+              <button
+                key={index}
+                onClick={() => selectGuesser(player.name)}
+                className={`
+                  p-5 rounded-xl font-heading text-[18px] font-bold border-2
+                  transition-all duration-150 ease-out cursor-pointer active:scale-[0.96]
+                  ${selectedGuesser === player.name
+                    ? 'bg-brass-gradient text-qtc-black border-qtc-brass-light/30 shadow-brass'
+                    : 'bg-qtc-charcoal text-qtc-cream border-qtc-brass/50 hover:border-qtc-brass'
+                  }
+                `}
+              >
+                {player.name}
+              </button>
+            ))}
+          </div>
+          
+          {/* Points preview */}
+          {selectedGuesser && (
+            <GameCard variant="brass" className="mt-8">
+              <p className="font-body text-[14px] text-qtc-copper text-center">
+                Time: {elapsedTime}s = {points} points each
+              </p>
+              <div className="mt-4 flex gap-6 justify-center">
+                <div className="text-center">
+                  <p className="font-body text-[12px] text-qtc-copper">{actualPerformerName}</p>
+                  <p className="font-heading text-[24px] font-bold text-qtc-brass">+{points}</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-body text-[12px] text-qtc-copper">{selectedGuesser}</p>
+                  <p className="font-heading text-[24px] font-bold text-qtc-brass">+{points}</p>
+                </div>
+              </div>
+            </GameCard>
+          )}
+          
+          <BrassButton
+            onClick={confirmSuccess}
+            disabled={!selectedGuesser}
+            variant={selectedGuesser ? "holiday" : "secondary"}
+            size="lg"
+            className="mt-8"
+          >
+            NEXT ROUND
+          </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -607,43 +628,47 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
   if (phase === 'timeout' && currentPrompt) {
     const actualPerformerName = passedTo || performer.name;
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col">
-        {/* Whose turn banner */}
-        <div className="w-full py-3 bg-[#81B29A] text-center">
-          <p className="font-heading text-[18px] font-bold text-[#1F1E1C]">
-            {actualPerformerName.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+      <SteampunkLayout variant="dark" showGears={true}>
+        <main className="min-h-screen flex flex-col">
+          {/* Whose turn banner */}
+          <div className="w-full py-3 bg-teal-gradient text-center shadow-deep">
+            <p className="font-heading text-[18px] font-bold text-qtc-cream">
+              {actualPerformerName.toUpperCase()}&apos;S TURN — HOLD THE PHONE
+            </p>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <p className="font-mono text-[14px] text-qtc-holiday-red uppercase tracking-wider">
+            Time&apos;s Up!
           </p>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <p className="font-body text-[14px] text-[#C45B4D] uppercase tracking-wider">
-          Time&apos;s Up!
-        </p>
-        
-        <h1 className="mt-4 font-heading text-[32px] font-bold text-[#F0EEE9] text-center">
-          No one got it
-        </h1>
-        
-        <div className="mt-8 p-6 bg-[#2D2B28] rounded-xl max-w-[360px]">
-          <p className="font-body text-[14px] text-[#9B9388] text-center mb-2">
-            It was:
+          
+          <h1 className="mt-4 font-heading text-[32px] font-bold text-qtc-brass-light text-center">
+            No one got it
+          </h1>
+          
+          <GameCard variant="dark" className="mt-8 max-w-[360px]">
+            <p className="font-body text-[14px] text-qtc-copper text-center mb-2">
+              It was:
+            </p>
+            <p className="font-heading text-[24px] font-normal text-qtc-cream text-center">
+              &ldquo;{currentPrompt.clue}&rdquo;
+            </p>
+          </GameCard>
+          
+          <p className="mt-6 font-body text-[16px] text-qtc-copper">
+            No points this round
           </p>
-          <p className="font-heading text-[24px] font-normal text-[#F0EEE9] text-center">
-            &ldquo;{currentPrompt.clue}&rdquo;
-          </p>
-        </div>
-        
-        <p className="mt-6 font-body text-[16px] text-[#9B9388]">
-          No points this round
-        </p>
-        
-        <button
-          onClick={nextRound}
-          className="mt-8 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-        >
-          {currentRound >= players.length ? 'SEE FINAL SCORES' : 'NEXT ROUND'}
-        </button>
-        </div>
-      </main>
+          
+          <BrassButton
+            onClick={nextRound}
+            variant="holiday"
+            size="lg"
+            className="mt-8"
+          >
+            {currentRound >= players.length ? 'SEE FINAL SCORES' : 'NEXT ROUND'}
+          </BrassButton>
+          </div>
+        </main>
+      </SteampunkLayout>
     );
   }
 
@@ -653,52 +678,63 @@ function PerformanceContent({ session: initialSession }: { session: GameSession 
     const winner = sortedScores[0];
     
     return (
-      <main className="min-h-screen bg-[#1F1E1C] flex flex-col items-center justify-center px-6">
-        <p className="font-body text-[13px] text-[#9B9388] uppercase tracking-wider">
-          Performance Complete
-        </p>
-        
-        <h1 className="mt-4 font-heading text-[42px] font-bold text-[#F0EEE9] text-center">
-          {winner.name.toUpperCase()} WINS!
-        </h1>
-        
-        <div className="mt-4 w-[100px] h-[3px] bg-[#D4A574] rounded-full" />
-        
-        {/* Final scoreboard */}
-        <div className="mt-10 w-full max-w-[320px] space-y-3">
-          {sortedScores.map((s, i) => (
-            <div
-              key={i}
-              className={`
-                flex items-center justify-between p-4 rounded-lg
-                ${i === 0 ? 'bg-[#D4A574] text-[#1F1E1C]' : 'bg-[#2D2B28] text-[#F0EEE9]'}
-              `}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`font-heading text-[20px] font-bold ${i === 0 ? 'text-[#1F1E1C]' : 'text-[#9B9388]'}`}>
-                  {i + 1}
-                </span>
-                <span className="font-body text-[18px] font-medium">{s.name}</span>
-              </div>
-              <span className="font-heading text-[24px] font-bold">{s.score}</span>
-            </div>
-          ))}
-        </div>
-        
-        <button
-          onClick={handleGameComplete}
-          className="mt-12 px-12 py-5 bg-[#F0EEE9] text-[#1F1E1C] font-body text-lg font-bold rounded-lg cursor-pointer transition-all duration-150 ease-out hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] select-none"
-        >
-          CONTINUE
-        </button>
-        
-        <button
-          onClick={() => router.push('/')}
-          className="mt-4 px-12 py-4 bg-transparent text-[#9B9388] font-body text-[16px] font-medium cursor-pointer transition-all duration-150 ease-out hover:text-[#F0EEE9] select-none"
-        >
-          Back to Home
-        </button>
-      </main>
+      <SteampunkLayout variant="holiday">
+        <main className="min-h-screen flex flex-col items-center justify-center px-6">
+          <HolidayGarland className="mb-6" />
+          
+          <p className="font-mono text-[13px] text-qtc-copper uppercase tracking-wider">
+            Performance Complete
+          </p>
+          
+          <h1 className="mt-4 font-heading text-[42px] font-bold text-qtc-brass-light text-center">
+            {winner.name.toUpperCase()} WINS!
+          </h1>
+          
+          <div className="mt-4 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
+          
+          {/* Final scoreboard */}
+          <div className="mt-10 w-full max-w-[320px] space-y-3">
+            {sortedScores.map((s, i) => (
+              <GameCard
+                key={i}
+                variant={i === 0 ? "brass" : "dark"}
+                className={i === 0 ? 'bg-brass-gradient text-qtc-black' : ''}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={`font-heading text-[20px] font-bold ${i === 0 ? 'text-qtc-black' : 'text-qtc-copper'}`}>
+                      {i + 1}
+                    </span>
+                    <span className={`font-body text-[18px] font-medium ${i === 0 ? 'text-qtc-black' : 'text-qtc-cream'}`}>
+                      {s.name}
+                    </span>
+                  </div>
+                  <AnimatedScore 
+                    value={s.score} 
+                    className={`font-heading text-[24px] font-bold ${i === 0 ? 'text-qtc-black' : 'text-qtc-brass'}`} 
+                  />
+                </div>
+              </GameCard>
+            ))}
+          </div>
+          
+          <BrassButton
+            onClick={handleGameComplete}
+            variant="holiday"
+            size="lg"
+            className="mt-12"
+          >
+            CONTINUE
+          </BrassButton>
+          
+          <GhostButton
+            onClick={() => router.push('/')}
+            className="mt-4"
+          >
+            Back to Home
+          </GhostButton>
+        </main>
+      </SteampunkLayout>
     );
   }
 
