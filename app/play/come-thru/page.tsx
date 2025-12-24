@@ -772,3 +772,35 @@ function ComeThruContent({ session: initialSession }: { session: GameSession }) 
 
   return null;
 }
+
+// ═══════════════════════════════════════════════════════════
+// PAGE WRAPPER - Required for Next.js
+// ═══════════════════════════════════════════════════════════
+
+export default function ComeThruPage() {
+  const router = useRouter();
+  const [session, setSession] = useState<GameSession | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadedSession = loadSession();
+    if (!loadedSession) {
+      router.push('/setup');
+      return;
+    }
+    setSession(loadedSession);
+    setLoading(false);
+  }, [router]);
+
+  if (loading || !session) {
+    return (
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
+    );
+  }
+
+  return <ComeThruContent session={session} />;
+}
