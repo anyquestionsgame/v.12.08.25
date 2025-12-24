@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  loadSession,
   clearSession,
   getScoreboard,
   getWinners,
@@ -82,16 +83,6 @@ function FinalScoresContent({ session: initialSession }: { session: GameSession 
     return initialSession.gameScores[gameType][playerName] || 0;
   };
 
-  if (!session) {
-    return (
-      <SteampunkLayout variant="dark">
-        <div className="min-h-screen flex items-center justify-center">
-          <Gear size="lg" speed="fast" />
-        </div>
-      </SteampunkLayout>
-    );
-  }
-
   const isTie = winners.length > 1;
 
   return (
@@ -103,7 +94,7 @@ function FinalScoresContent({ session: initialSession }: { session: GameSession 
         {/* Celebration header */}
         <div className="text-center animate-slideUp">
           <p className="font-mono text-[14px] text-qtc-brass uppercase tracking-wider">
-            {session.selectedGames.length} {session.selectedGames.length === 1 ? 'Game' : 'Games'} Complete
+            {initialSession.selectedGames.length} {initialSession.selectedGames.length === 1 ? 'Game' : 'Games'} Complete
           </p>
           
           <h1 className="mt-4 font-heading text-[48px] font-bold text-qtc-brass-light">
@@ -181,7 +172,7 @@ function FinalScoresContent({ session: initialSession }: { session: GameSession 
           
           {showGameBreakdown && (
             <div className="mt-4 space-y-6">
-              {session.selectedGames.map((gameType) => (
+              {initialSession.selectedGames.map((gameType) => (
                 <GameCard key={gameType} variant="dark" className="p-4">
                   <p className="font-mono text-[12px] text-qtc-brass uppercase tracking-wider mb-3">
                     {GAME_NAMES[gameType]}
@@ -227,11 +218,35 @@ function FinalScoresContent({ session: initialSession }: { session: GameSession 
   );
 }
 
-export default function FinalScores() {
-  return (
-    <SessionGuard redirectOnInvalid={true}>
-      {(session) => <FinalScoresContent session={session} />}
-    </SessionGuard>
-  );
+// ═══════════════════════════════════════════════════════════
+// PAGE WRAPPER - Required for Next.js
+// ═══════════════════════════════════════════════════════════
+
+export default function FinalScoresPage() {
+  const router = useRouter();
+  const [session, setSession] = useState<GameSession | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadedSession = loadSession();
+    if (!loadedSession) {
+      router.push('/');
+      return;
+    }
+    setSession(loadedSession);
+    setLoading(false);
+  }, [router]);
+
+  if (loading || !session) {
+    return (
+      <SteampunkLayout variant="dark">
+        <div className="min-h-screen flex items-center justify-center">
+          <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
+    );
+  }
+
+  return <FinalScoresContent session={session} />;
 }
 
