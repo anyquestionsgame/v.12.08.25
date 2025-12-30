@@ -29,7 +29,7 @@ type Screen = 1 | 2 | 3;
 export default function KingOfHeartsEntry() {
   const router = useRouter();
   const [currentScreen, setCurrentScreen] = useState<Screen>(1);
-  const [playerNames, setPlayerNames] = useState<string[]>(['', '', '', '']);
+  const [playerNames, setPlayerNames] = useState<string[]>(['', '']);
   const [mounted, setMounted] = useState(false);
   const [videoFadingOut, setVideoFadingOut] = useState(false);
 
@@ -84,7 +84,7 @@ export default function KingOfHeartsEntry() {
   }
 
   const validPlayerNames = playerNames.filter(name => name.trim().length > 0);
-  const canStartSetup = validPlayerNames.length >= 4;
+  const canStartSetup = validPlayerNames.length >= 2;
 
   const handleNameChange = (index: number, value: string) => {
     const newNames = [...playerNames];
@@ -99,7 +99,7 @@ export default function KingOfHeartsEntry() {
   };
 
   const handleRemovePlayer = (index: number) => {
-    if (playerNames.length > 4) {
+    if (playerNames.length > 2) {
       const newNames = playerNames.filter((_, i) => i !== index);
       setPlayerNames(newNames);
     }
@@ -365,7 +365,7 @@ export default function KingOfHeartsEntry() {
 
           {!canStartSetup && (
             <p className="mt-4 font-mono text-[13px] text-qtc-copper/60 text-center tracking-wide">
-              Add at least 4 players to continue
+              Add at least 2 players to continue
             </p>
           )}
 
