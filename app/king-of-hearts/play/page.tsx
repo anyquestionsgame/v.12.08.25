@@ -19,8 +19,15 @@ interface Player {
   score: number;
 }
 
+// Shared category for Final Round - loaded from localStorage
+interface GameConfig {
+  sharedCategory: string;
+  playerCount: number;
+}
+
 type GamePhase = 
   | 'loading'
+  | 'round-intro'      // Show round title before starting
   | 'category-select'
   | 'point-select'
   | 'generating'
@@ -229,6 +236,9 @@ export default function KingOfHeartsPlay() {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [gamePhase, setGamePhase] = useState<GamePhase>('loading');
   
+  // Game configuration (loaded from setup)
+  const [gameConfig, setGameConfig] = useState<GameConfig>({ sharedCategory: '', playerCount: 4 });
+  
   // Question tracking
   const [questionsAsked, setQuestionsAsked] = useState<Set<string>>(new Set());
   
@@ -259,6 +269,7 @@ export default function KingOfHeartsPlay() {
       const storedPlayers = localStorage.getItem('king_of_hearts_players');
       const storedRound = localStorage.getItem('king_of_hearts_round');
       const storedQuestions = localStorage.getItem('king_of_hearts_questions');
+      const storedSharedCategory = localStorage.getItem('king_of_hearts_shared_category');
       
       if (storedPlayers) {
         try {
@@ -275,6 +286,12 @@ export default function KingOfHeartsPlay() {
           setPlayers(gamePlayers);
           setCurrentRound(isRound2 ? 2 : 1);
           setCurrentPlayerIndex(Math.floor(Math.random() * gamePlayers.length));
+          
+          // Load game configuration
+          setGameConfig({
+            sharedCategory: storedSharedCategory || '',
+            playerCount: gamePlayers.length,
+          });
           
           if (storedQuestions) {
             try {
@@ -300,7 +317,8 @@ export default function KingOfHeartsPlay() {
             }
           }
           
-          setGamePhase('category-select');
+          // Show round intro first, then category select
+          setGamePhase('round-intro');
         } catch (error) {
           console.error('Error parsing players:', error);
           router.push('/king-of-hearts');
@@ -531,6 +549,7 @@ export default function KingOfHeartsPlay() {
     
     if (roundComplete) {
       if (currentRound === 1) {
+        // Round 1 complete - save state and go to round complete screen
         if (typeof window !== 'undefined') {
           localStorage.setItem('king_of_hearts_game_state', JSON.stringify({
             players: updatedPlayers,
@@ -539,10 +558,14 @@ export default function KingOfHeartsPlay() {
         }
         router.push('/king-of-hearts/round-complete');
       } else {
+        // Round 2 complete - go to Final Round (wagering)
         if (typeof window !== 'undefined') {
-          localStorage.setItem('king_of_hearts_final_scores', JSON.stringify(updatedPlayers));
+          localStorage.setItem('king_of_hearts_game_state', JSON.stringify({
+            players: updatedPlayers,
+            currentRound: 2,
+          }));
         }
-        router.push('/king-of-hearts/game-over');
+        router.push('/king-of-hearts/final-round');
       }
     } else {
       setGamePhase('category-select');
@@ -559,6 +582,65 @@ export default function KingOfHeartsPlay() {
       <SteampunkLayout variant="dark">
         <div className="min-h-screen flex items-center justify-center">
           <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // SCREEN: ROUND INTRO
+  // ═══════════════════════════════════════════════════════════
+  if (gamePhase === 'round-intro') {
+    const roundSubtitle = currentRound === 1 
+      ? "Answer questions about YOUR expertise"
+      : "Answer questions about THEIR expertise";
+    
+    return (
+      <SteampunkLayout variant="holiday">
+        <div className="min-h-screen flex flex-col items-center justify-center px-6">
+          <HolidayGarland className="mb-8" />
+          
+          <p className="font-mono text-[14px] text-qtc-copper uppercase tracking-wider">
+            Round {currentRound} of 3
+          </p>
+          
+          <h1 className="mt-4 font-heading text-[42px] font-bold text-qtc-brass-light text-center leading-tight">
+            {roundTitle}
+          </h1>
+          
+          <p className="mt-4 font-body text-[18px] text-qtc-cream text-center max-w-[400px]">
+            {roundSubtitle}
+          </p>
+          
+          <div className="mt-8 w-[100px] h-[3px] bg-qtc-brass rounded-full" />
+          
+          {/* Player categories for this round */}
+          <div className="mt-8 w-full max-w-[400px] space-y-2">
+            {players.map((player) => {
+              const category = currentRound === 1 ? player.selfCategory : player.peerCategory;
+              return (
+                <GameCard key={player.name} variant="dark" className="p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-body text-[16px] text-qtc-cream font-medium">
+                      {player.name}
+                    </span>
+                    <span className="font-body text-[14px] text-qtc-copper">
+                      {category}
+                    </span>
+                  </div>
+                </GameCard>
+              );
+            })}
+          </div>
+          
+          <BrassButton
+            variant="holiday"
+            size="lg"
+            onClick={() => setGamePhase('category-select')}
+            className="mt-10"
+          >
+            Start Round {currentRound}
+          </BrassButton>
         </div>
       </SteampunkLayout>
     );

@@ -7,13 +7,82 @@ import Anthropic from '@anthropic-ai/sdk';
 export interface TriviaQuestion {
   originalCategory: string;  // The actual topic (e.g., "Wine") - used for question generation
   displayCategory: string;   // The fun name shown to players (e.g., "Pretentious Restaurant Moments")
-  difficulty: 100 | 200 | 300 | 400;
+  difficulty: number;        // Point value: 100-500 depending on round
   questionText: string;
-  rangeText: string;
+  rangeText: string;         // ANY QUESTIONS voice - personality/flavor text
   answer: {
     display: string;
     acceptable: string[];
   };
+  round?: 1 | 2 | 3;        // Which round this question is for
+}
+
+// ═══════════════════════════════════════════════════════════
+// ROUND CONFIGURATION
+// ═══════════════════════════════════════════════════════════
+
+export interface RoundConfig {
+  questionCount: number;
+  difficulties: number[];
+  difficultyDescriptions: Record<number, string>;
+}
+
+// Get round configuration based on player count
+export function getRoundConfig(playerCount: number, round: 1 | 2 | 3): RoundConfig {
+  if (round === 3) {
+    // Final Round: Single question for all players
+    return {
+      questionCount: 1,
+      difficulties: [350], // Medium-hard difficulty
+      difficultyDescriptions: {
+        350: "7/10 difficulty - challenging but fair for everyone"
+      }
+    };
+  }
+  
+  if (round === 2) {
+    // Round 2: Peer-selected categories
+    if (playerCount >= 7) {
+      return {
+        questionCount: 1,
+        difficulties: [500],
+        difficultyDescriptions: {
+          500: "7/10 difficulty - solid medium, not expert-level"
+        }
+      };
+    } else {
+      return {
+        questionCount: 2,
+        difficulties: [250, 500],
+        difficultyDescriptions: {
+          250: "3/10 difficulty - slightly easier than Round 1 medium",
+          500: "7/10 difficulty - solid medium, not expert-level"
+        }
+      };
+    }
+  }
+  
+  // Round 1: Self-selected expertise
+  if (playerCount >= 5) {
+    return {
+      questionCount: 2,
+      difficulties: [200, 300],
+      difficultyDescriptions: {
+        200: "5/10 difficulty - casual familiarity",
+        300: "10/10 difficulty - dedicated enthusiast, deep cut"
+      }
+    };
+  } else {
+    return {
+      questionCount: 3,
+      difficulties: [100, 200, 300],
+      difficultyDescriptions: {
+        100: "2/10 difficulty - Google-able in 10 seconds",
+        200: "5/10 difficulty - casual familiarity",
+        300: "10/10 difficulty - dedicated enthusiast, deep cut"
+      }
+    };
+  }
 }
 
 // Cache for adjacent category names
@@ -153,23 +222,28 @@ Return ONLY the category name, nothing else. No quotes, no explanation.`;
 export async function generateQuestions(
   category: string,
   playerName: string,
-  expertName: string
+  expertName: string,
+  round: 1 | 2 | 3 = 1,
+  playerCount: number = 4
 ): Promise<TriviaQuestion[]> {
+  // Get round-specific configuration
+  const config = getRoundConfig(playerCount, round);
+  
   // Check cache first
-  const cacheKey = `${category}-${playerName}-${expertName}`;
+  const cacheKey = `${category}-${round}-${playerCount}`;
   if (questionCache.has(cacheKey)) {
-    console.log(`[AI Engine] Cache hit for: ${category}`);
+    console.log(`[AI Engine] Cache hit for: ${category} (Round ${round})`);
     return questionCache.get(cacheKey)!;
   }
 
-  console.log(`[AI Engine] Generating questions for category: ${category}`);
+  console.log(`[AI Engine] Generating ${config.questionCount} questions for category: ${category} (Round ${round})`);
 
   // Generate the fun adjacent category name first
   const displayCategory = await generateAdjacentCategoryName(category);
 
   try {
     // ═══════════════════════════════════════════════════════════
-    // CLAUDE API - Clean prompts for better results
+    // CLAUDE API - Round-specific prompts
     // ═══════════════════════════════════════════════════════════
 
     const systemPrompt = `You are generating trivia questions for ANY QUESTIONS, a party game.
@@ -185,60 +259,45 @@ Every question MUST:
 2. Have exactly ONE correct verifiable answer
 3. Be something you could Google to verify
 
-Never generate questions that ask "what is X known for" or "what is associated with X" - those are NOT trivia questions.`;
+Never generate questions that ask "what is X known for" or "what is associated with X" - those are NOT trivia questions.
 
-    const userPrompt = `Generate 4 trivia questions about "${category}" for player ${playerName}.
-The expert who can steal wrong answers is ${expertName}.
+For the "rangeText" field: This is the ANY QUESTIONS personality voice. Be playful, teasing, and fun.
+Examples: "Shake it off, this isn't your thing anyway.", "Time to prove you're not just pretentious.", "Only true fans track this."`;
 
-Difficulty levels:
-- 100 points: Basic - anyone who's heard of this topic would know
-- 200 points: Casual - someone with mild familiarity would know
-- 300 points: Fan - dedicated enthusiast knowledge
-- 400 points: Expert - deep cut only true experts know
+    // Build difficulty descriptions for the prompt
+    const difficultyLines = config.difficulties.map(d => 
+      `- ${d} points: ${config.difficultyDescriptions[d]}`
+    ).join('\n');
+
+    const roundContext = round === 1 
+      ? "This is Round 1 - player answers questions about their OWN expertise."
+      : round === 2 
+        ? "This is Round 2 - player answers questions about SOMEONE ELSE'S expertise."
+        : "This is the Final Round - ALL players answer this question simultaneously.";
+
+    const userPrompt = `Generate ${config.questionCount} trivia question${config.questionCount > 1 ? 's' : ''} about "${category}".
+${roundContext}
+${round !== 3 ? `The expert who can steal wrong answers is ${expertName}.` : 'All players will wager on this question.'}
+
+Difficulty levels needed:
+${difficultyLines}
 
 Return ONLY valid JSON in this exact format:
 {
   "questions": [
-    {
-      "difficulty": 100,
-      "questionText": "What year did Survivor premiere on CBS?",
-      "rangeText": "This is TV history 101.",
+${config.difficulties.map((d, i) => `    {
+      "difficulty": ${d},
+      "questionText": "Your factual trivia question here?",
+      "rangeText": "Playful ANY QUESTIONS voice comment.",
       "answer": {
-        "display": "2000",
-        "acceptable": ["2000", "two thousand"]
+        "display": "The Answer",
+        "acceptable": ["The Answer", "answer", "alternate spelling"]
       }
-    },
-    {
-      "difficulty": 200,
-      "questionText": "Which host has hosted Survivor since season 1?",
-      "rangeText": "If you've seen even one episode...",
-      "answer": {
-        "display": "Jeff Probst",
-        "acceptable": ["Jeff Probst", "Probst"]
-      }
-    },
-    {
-      "difficulty": 300,
-      "questionText": "What is the name of the final vote where the jury picks the winner?",
-      "rangeText": "Superfan territory.",
-      "answer": {
-        "display": "Final Tribal Council",
-        "acceptable": ["Final Tribal Council", "Tribal Council", "FTC"]
-      }
-    },
-    {
-      "difficulty": 400,
-      "questionText": "How many days do contestants typically spend on the island in a standard season?",
-      "rangeText": "Only true fans track the calendar.",
-      "answer": {
-        "display": "39 days",
-        "acceptable": ["39", "39 days", "thirty-nine", "thirty-nine days"]
-      }
-    }
+    }${i < config.difficulties.length - 1 ? ',' : ''}`).join('\n')}
   ]
 }
 
-Now generate 4 questions about "${category}" following this exact format.`;
+Now generate ${config.questionCount} question${config.questionCount > 1 ? 's' : ''} about "${category}" at the specified difficult${config.questionCount > 1 ? 'ies' : 'y'}.`;
 
     const response = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -260,7 +319,7 @@ Now generate 4 questions about "${category}" following this exact format.`;
     }
 
     const content = textBlock.text;
-    console.log(`[AI Engine] Raw response received for: ${category}`);
+    console.log(`[AI Engine] Raw response received for: ${category} (Round ${round})`);
 
     // Extract JSON from response (Claude might include markdown code blocks)
     let jsonText = content;
@@ -273,8 +332,8 @@ Now generate 4 questions about "${category}" following this exact format.`;
     const rawQuestions = parsed.questions || parsed;
 
     // Validate structure
-    if (!Array.isArray(rawQuestions) || rawQuestions.length !== 4) {
-      throw new Error(`Invalid response structure: expected 4 questions, got ${Array.isArray(rawQuestions) ? rawQuestions.length : 'non-array'}`);
+    if (!Array.isArray(rawQuestions) || rawQuestions.length !== config.questionCount) {
+      throw new Error(`Invalid response structure: expected ${config.questionCount} questions, got ${Array.isArray(rawQuestions) ? rawQuestions.length : 'non-array'}`);
     }
 
     // Validate each question and add category names
@@ -289,7 +348,8 @@ Now generate 4 questions about "${category}" following this exact format.`;
         difficulty: q.difficulty,
         questionText: q.questionText,
         rangeText: q.rangeText || '',
-        answer: q.answer
+        answer: q.answer,
+        round: round
       };
     });
 
@@ -303,7 +363,7 @@ Now generate 4 questions about "${category}" following this exact format.`;
     console.error('[AI Engine] Generation failed:', error);
     
     // Return fallback mock questions
-    return await getMockQuestions(category, playerName);
+    return await getMockQuestions(category, playerName, round, playerCount);
   }
 }
 
@@ -312,60 +372,34 @@ Now generate 4 questions about "${category}" following this exact format.`;
 // ═══════════════════════════════════════════════════════════
 // When AI fails, the expert asks the question instead
 
-async function getMockQuestions(category: string, playerName: string): Promise<TriviaQuestion[]> {
-  console.log(`[AI Engine] Using fallback questions for: ${category}`);
+async function getMockQuestions(
+  category: string, 
+  playerName: string,
+  round: 1 | 2 | 3 = 1,
+  playerCount: number = 4
+): Promise<TriviaQuestion[]> {
+  console.log(`[AI Engine] Using fallback questions for: ${category} (Round ${round})`);
   
   // Still try to get a fun display name even for fallback
   const displayCategory = await generateAdjacentCategoryName(category).catch(() => category);
+  
+  const config = getRoundConfig(playerCount, round);
+  
+  // Generate fallback questions based on round config
+  const fallbackQuestions: TriviaQuestion[] = config.difficulties.map(difficulty => ({
+    originalCategory: category,
+    displayCategory,
+    difficulty,
+    questionText: `what is something specific about ${category} that tests your knowledge?`,
+    rangeText: `This is a ${difficulty} point question - good luck!`,
+    answer: {
+      display: "(Accept any reasonable answer)",
+      acceptable: ["any", "reasonable", "answer"]
+    },
+    round
+  }));
 
-  // Fallback: Generic but properly formatted trivia questions
-  // These are real questions that can be asked and answered
-  return [
-    {
-      originalCategory: category,
-      displayCategory,
-      difficulty: 100,
-      questionText: `what is ${category} most commonly associated with?`,
-      rangeText: `Think of the first thing that comes to mind - the obvious answer.`,
-      answer: {
-        display: "(Accept any reasonable answer)",
-        acceptable: ["any", "reasonable", "answer"]
-      }
-    },
-    {
-      originalCategory: category,
-      displayCategory,
-      difficulty: 200,
-      questionText: `what is a well-known fact about ${category}?`,
-      rangeText: `Something most people who know about ${category} would agree on.`,
-      answer: {
-        display: "(Accept any reasonable answer)",
-        acceptable: ["any", "reasonable", "answer"]
-      }
-    },
-    {
-      originalCategory: category,
-      displayCategory,
-      difficulty: 300,
-      questionText: `what is a specific detail about ${category} that casual fans might not know?`,
-      rangeText: `This requires some real knowledge of the topic.`,
-      answer: {
-        display: "(Accept any reasonable answer)",
-        acceptable: ["any", "reasonable", "answer"]
-      }
-    },
-    {
-      originalCategory: category,
-      displayCategory,
-      difficulty: 400,
-      questionText: `what is an expert-level fact about ${category}?`,
-      rangeText: `Only true experts would know this one.`,
-      answer: {
-        display: "(Accept any reasonable answer)",
-        acceptable: ["any", "reasonable", "answer"]
-      }
-    }
-  ];
+  return fallbackQuestions;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -383,11 +417,13 @@ export function clearQuestionCache(): void {
 
 export async function getQuestion(
   category: string,
-  difficulty: 100 | 200 | 300 | 400,
+  difficulty: number,
   playerName: string,
-  expertName: string
+  expertName: string,
+  round: 1 | 2 | 3 = 1,
+  playerCount: number = 4
 ): Promise<TriviaQuestion | null> {
-  const questions = await generateQuestions(category, playerName, expertName);
+  const questions = await generateQuestions(category, playerName, expertName, round, playerCount);
   return questions.find(q => q.difficulty === difficulty) || null;
 }
 

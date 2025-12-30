@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateQuestions, TriviaQuestion } from '@/app/lib/aiQuestionEngine';
+import { generateQuestions, TriviaQuestion, getRoundConfig } from '@/app/lib/aiQuestionEngine';
 
 // Route segment config - prevent build-time analysis
 export const runtime = 'nodejs';
@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic';
 // Generate AI-powered trivia questions
 //
 // SINGLE CATEGORY:
-// Request: { category: string, playerName: string, expertName: string }
+// Request: { category: string, playerName: string, expertName: string, round?: number, playerCount?: number }
 // Response: { success: true, questions: TriviaQuestion[], category: string }
 //
 // BULK GENERATION:
-// Request: { categories: [{ name: string, expert: string }], players: string[] }
+// Request: { categories: [{ name: string, expert: string, round?: number }], players: string[], playerCount?: number }
 // Response: { success: true, questionsByCategory: { [category]: TriviaQuestion[] } }
 // ═══════════════════════════════════════════════════════════
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 // ═══════════════════════════════════════════════════════════
 
 async function handleSingleGeneration(body: any) {
-  const { category, playerName, expertName } = body;
+  const { category, playerName, expertName, round = 1, playerCount = 4 } = body;
 
   // Validate required fields
   if (!category || typeof category !== 'string') {
@@ -73,15 +73,18 @@ async function handleSingleGeneration(body: any) {
     );
   }
 
-  console.log(`[API] Generating questions for category: ${category}`);
+  const validRound = (round === 1 || round === 2 || round === 3) ? round : 1;
+  
+  console.log(`[API] Generating questions for category: ${category} (Round ${validRound})`);
 
-  const questions = await generateQuestions(category, playerName, expertName);
+  const questions = await generateQuestions(category, playerName, expertName, validRound as 1 | 2 | 3, playerCount);
 
   return NextResponse.json({
     success: true,
     questions,
     category,
     count: questions.length,
+    round: validRound,
   });
 }
 
@@ -90,7 +93,7 @@ async function handleSingleGeneration(body: any) {
 // ═══════════════════════════════════════════════════════════
 
 async function handleBulkGeneration(body: any) {
-  const { categories, players } = body;
+  const { categories, players, playerCount } = body;
 
   // Validate
   if (!Array.isArray(categories) || categories.length === 0) {
@@ -107,7 +110,8 @@ async function handleBulkGeneration(body: any) {
     );
   }
 
-  console.log(`[API] Bulk generating questions for ${categories.length} categories`);
+  const numPlayers = playerCount || players.length;
+  console.log(`[API] Bulk generating questions for ${categories.length} categories (${numPlayers} players)`);
 
   const questionsByCategory: Record<string, TriviaQuestion[]> = {};
   const errors: string[] = [];
@@ -119,18 +123,23 @@ async function handleBulkGeneration(body: any) {
   for (let i = 0; i < categories.length; i += batchSize) {
     const batch = categories.slice(i, i + batchSize);
     
-    const batchPromises = batch.map(async (cat: { name: string; expert: string }) => {
+    const batchPromises = batch.map(async (cat: { name: string; expert: string; round?: number }) => {
       try {
+        // Determine round from category config, default to 1
+        const round = (cat.round === 1 || cat.round === 2 || cat.round === 3) ? cat.round : 1;
+        
         // Use first player name for the prompts (they all see the same questions)
-        const questions = await generateQuestions(cat.name, players[0], cat.expert);
-        return { category: cat.name, questions, success: true };
+        const questions = await generateQuestions(cat.name, players[0], cat.expert, round as 1 | 2 | 3, numPlayers);
+        return { category: cat.name, questions, success: true, round };
       } catch (error) {
         console.error(`[API] Failed to generate for ${cat.name}:`, error);
+        const round = (cat.round === 1 || cat.round === 2 || cat.round === 3) ? cat.round : 1;
         return { 
           category: cat.name, 
-          questions: getFallbackQuestions(cat.name, players[0]), 
+          questions: getFallbackQuestions(cat.name, players[0], round as 1 | 2 | 3, numPlayers), 
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
+          round
         };
       }
     });
@@ -166,40 +175,20 @@ async function handleBulkGeneration(body: any) {
 }
 
 // Fallback questions if AI fails - these are REAL questions, not meta-descriptions
-function getFallbackQuestions(category: string, playerName: string): TriviaQuestion[] {
-  const fallbackTemplates = [
-    { 
-      difficulty: 100, 
-      questionText: `what is the most famous thing associated with ${category}?`,
-      rangeText: `Think of the most obvious answer - we're being generous here.`
-    },
-    { 
-      difficulty: 200, 
-      questionText: `who is the most well-known person in the field of ${category}?`,
-      rangeText: `Any famous name related to ${category} works.`
-    },
-    { 
-      difficulty: 300, 
-      questionText: `what year did ${category} become widely popular or recognized?`,
-      rangeText: `We'll accept anything within 10 years.`
-    },
-    { 
-      difficulty: 400, 
-      questionText: `what is a technical term or insider phrase used in ${category}?`,
-      rangeText: `Only true ${category} experts would know this.`
-    }
-  ];
-
-  return fallbackTemplates.map(template => ({
+function getFallbackQuestions(category: string, playerName: string, round: 1 | 2 | 3 = 1, playerCount: number = 4): TriviaQuestion[] {
+  const config = getRoundConfig(playerCount, round);
+  
+  return config.difficulties.map(difficulty => ({
     originalCategory: category,
     displayCategory: category,
-    difficulty: template.difficulty as 100 | 200 | 300 | 400,
-    questionText: template.questionText,
-    rangeText: template.rangeText,
+    difficulty,
+    questionText: `what is something specific about ${category} that tests your knowledge?`,
+    rangeText: `This is a ${difficulty} point question - good luck!`,
     answer: {
       display: "(The expert will judge the answer)",
       acceptable: ["any reasonable answer", "expert judgment"]
-    }
+    },
+    round
   }));
 }
 

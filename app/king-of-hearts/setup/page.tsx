@@ -18,7 +18,12 @@ interface PlayerSetupData {
   peerCategoryFrom: string;
 }
 
-type SetupPhase = 'input' | 'generating' | 'ready';
+interface GameSetupData {
+  players: PlayerSetupData[];
+  sharedCategory: string; // For Final Round - "Something you ALL know about"
+}
+
+type SetupPhase = 'shared-category' | 'input' | 'generating' | 'ready';
 
 // Wrapper component to handle Suspense for useSearchParams
 export default function KingOfHeartsSetup() {
@@ -42,7 +47,10 @@ function KingOfHeartsSetupContent() {
   const [mounted, setMounted] = useState(false);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState<PlayerSetupData[]>([]);
-  const [setupPhase, setSetupPhase] = useState<SetupPhase>('input');
+  const [setupPhase, setSetupPhase] = useState<SetupPhase>('shared-category');
+  
+  // Shared category for Final Round - entered first before individual player input
+  const [sharedCategory, setSharedCategory] = useState('');
   
   // Form state for current player
   const [selfCategory, setSelfCategory] = useState('');
@@ -123,21 +131,33 @@ function KingOfHeartsSetupContent() {
   const preGenerateAllQuestions = async (finalPlayers: PlayerSetupData[]) => {
     setSetupPhase('generating');
     
+    // Get player count to determine question counts
+    const playerCount = finalPlayers.length;
+    
     // Build categories for Round 1 (selfCategory) and Round 2 (peerCategory)
     const round1Categories = finalPlayers.map(p => ({
       name: p.selfCategory,
       expert: p.name,
+      round: 1,
     }));
     
     const round2Categories = finalPlayers.map(p => ({
       name: p.peerCategory,
       expert: p.name,
+      round: 2,
     }));
     
-    const allCategories = [...round1Categories, ...round2Categories];
+    // Add shared category for Final Round (no specific expert - all players)
+    const finalRoundCategory = {
+      name: sharedCategory,
+      expert: 'everyone', // Special marker for final round
+      round: 3,
+    };
+    
+    const allCategories = [...round1Categories, ...round2Categories, finalRoundCategory];
     const playerNamesList = finalPlayers.map(p => p.name);
     
-    console.log(`[Setup] Pre-generating questions for ${allCategories.length} categories`);
+    console.log(`[Setup] Pre-generating questions for ${allCategories.length} categories (including Final Round)`);
     setGenerationProgress(`Preparing ${allCategories.length} categories...`);
 
     try {
@@ -147,6 +167,7 @@ function KingOfHeartsSetupContent() {
         body: JSON.stringify({
           categories: allCategories,
           players: playerNamesList,
+          playerCount: playerCount,
         }),
       });
 
@@ -158,10 +179,12 @@ function KingOfHeartsSetupContent() {
 
       console.log(`[Setup] Generated ${data.totalQuestions} questions`);
       
-      // Store questions in localStorage
+      // Store questions and game setup in localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('king_of_hearts_questions', JSON.stringify(data.questionsByCategory));
         localStorage.setItem('king_of_hearts_players', JSON.stringify(finalPlayers));
+        localStorage.setItem('king_of_hearts_shared_category', sharedCategory);
+        localStorage.removeItem('king_of_hearts_round'); // Start fresh
       }
 
       setSetupPhase('ready');
@@ -177,6 +200,7 @@ function KingOfHeartsSetupContent() {
       // Still proceed with fallback - questions will be generated on-demand
       if (typeof window !== 'undefined') {
         localStorage.setItem('king_of_hearts_players', JSON.stringify(finalPlayers));
+        localStorage.setItem('king_of_hearts_shared_category', sharedCategory);
       }
       
       setGenerationProgress('Using backup questions...');
@@ -265,6 +289,83 @@ function KingOfHeartsSetupContent() {
       <SteampunkLayout variant="dark">
         <div className="min-h-screen flex items-center justify-center">
           <Gear size="lg" speed="fast" />
+        </div>
+      </SteampunkLayout>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // SHARED CATEGORY INPUT (First Screen - Final Round category)
+  // ═══════════════════════════════════════════════════════════
+  
+  if (setupPhase === 'shared-category' && !quickTestMode && playerNames.length > 0) {
+    const handleSharedCategorySubmit = () => {
+      if (sharedCategory.trim()) {
+        setSetupPhase('input');
+      }
+    };
+
+    return (
+      <SteampunkLayout variant="dark" showGears={true}>
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative">
+          {/* Quick Test Mode Button - Top Right */}
+          <button
+            onClick={() => setQuickTestMode(true)}
+            className="absolute top-4 right-4 px-3 py-2 bg-qtc-copper text-qtc-cream font-body text-[12px] font-bold rounded-lg hover:bg-qtc-copper-dark transition-colors"
+          >
+            🧪 Quick Test
+          </button>
+
+          <div className="flex flex-col items-center w-full max-w-[500px]">
+            {/* Holiday decoration */}
+            <HolidayGarland className="mb-6" />
+
+            {/* Title */}
+            <h1 className="font-heading text-[36px] font-bold text-qtc-brass-light tracking-tight select-none text-center">
+              Before we begin...
+            </h1>
+            
+            <p className="mt-4 font-body text-[18px] text-qtc-copper text-center">
+              One question for the whole group
+            </p>
+
+            <div className="mt-10 w-full">
+              {/* Shared Category Input */}
+              <GameCard variant="holiday">
+                <label className="block font-heading text-[20px] font-bold text-qtc-brass-light mb-2 select-none text-center">
+                  What&apos;s something you ALL know about?
+                </label>
+                <p className="mb-4 font-body text-[14px] text-qtc-copper text-center">
+                  This will be the Final Round category for everyone
+                </p>
+                <BrassInput
+                  value={sharedCategory}
+                  onChange={(e) => setSharedCategory(e.target.value)}
+                  placeholder="A topic everyone here knows..."
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && sharedCategory.trim()) {
+                      handleSharedCategorySubmit();
+                    }
+                  }}
+                />
+                <p className="mt-4 font-body text-[12px] text-qtc-copper/70 text-center">
+                  Examples: The Office, Your hometown, A shared hobby...
+                </p>
+              </GameCard>
+            </div>
+
+            {/* Submit Button */}
+            <BrassButton
+              variant={sharedCategory.trim() ? "holiday" : "primary"}
+              size="lg"
+              onClick={handleSharedCategorySubmit}
+              disabled={!sharedCategory.trim()}
+              className="mt-10 w-full"
+            >
+              Continue to Player Setup
+            </BrassButton>
+          </div>
         </div>
       </SteampunkLayout>
     );

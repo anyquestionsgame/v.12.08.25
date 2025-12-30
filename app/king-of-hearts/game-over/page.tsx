@@ -46,6 +46,8 @@ export default function GameOver() {
       localStorage.removeItem('king_of_hearts_game_state');
       localStorage.removeItem('king_of_hearts_final_scores');
       localStorage.removeItem('king_of_hearts_round');
+      localStorage.removeItem('king_of_hearts_shared_category');
+      localStorage.removeItem('king_of_hearts_questions');
     }
     router.push('/king-of-hearts');
   };
@@ -56,6 +58,8 @@ export default function GameOver() {
       localStorage.removeItem('king_of_hearts_game_state');
       localStorage.removeItem('king_of_hearts_final_scores');
       localStorage.removeItem('king_of_hearts_round');
+      localStorage.removeItem('king_of_hearts_shared_category');
+      localStorage.removeItem('king_of_hearts_questions');
     }
     router.push('/');
   };
