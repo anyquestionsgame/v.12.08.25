@@ -8,7 +8,7 @@ export default function Setup() {
   const [selectedPlayers, setSelectedPlayers] = useState<number | null>(null);
   const router = useRouter();
 
-  const playerOptions = [3, 4, 5, 6, 7, 8];
+  const playerOptions = [2, 3, 4, 5, 6, 7, 8];
 
   const handleContinue = () => {
     if (selectedPlayers) {

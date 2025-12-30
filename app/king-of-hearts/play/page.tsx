@@ -168,10 +168,24 @@ const getCategoryCallout = (category: string, expertName: string): string => {
 
 // Point value descriptions
 const pointDescriptions: Record<number, { label: string; subtitle: string }> = {
+  // Round 1 points
   100: { label: "100", subtitle: "The gimme" },
   200: { label: "200", subtitle: "Casual fan territory" },
-  300: { label: "300", subtitle: "Actually paying attention" },
-  400: { label: "400", subtitle: "Show-off question" }
+  300: { label: "300", subtitle: "Deep cut territory" },
+  // Round 2 points
+  250: { label: "250", subtitle: "Easy-ish territory" },
+  500: { label: "500", subtitle: "Prove you've been listening" }
+};
+
+// Get available points based on round and player count
+const getRoundPoints = (round: 1 | 2, playerCount: number): number[] => {
+  if (round === 2) {
+    if (playerCount >= 7) return [500];
+    return [250, 500];
+  }
+  // Round 1
+  if (playerCount >= 5) return [200, 300];
+  return [100, 200, 300];
 };
 
 // Steal prompts
@@ -342,13 +356,14 @@ export default function KingOfHeartsPlay() {
   }, [players, currentRound]);
 
   const isCategoryExhausted = useCallback((categoryName: string) => {
-    const difficulties = [100, 200, 300, 400];
-    return difficulties.every(d => questionsAsked.has(`${categoryName}-${d}`));
-  }, [questionsAsked]);
+    const roundPoints = getRoundPoints(currentRound, players.length);
+    return roundPoints.every(d => questionsAsked.has(`${categoryName}-${d}`));
+  }, [questionsAsked, currentRound, players.length]);
 
   const getAvailablePoints = useCallback((categoryName: string) => {
-    return [100, 200, 300, 400].filter(d => !questionsAsked.has(`${categoryName}-${d}`));
-  }, [questionsAsked]);
+    const roundPoints = getRoundPoints(currentRound, players.length);
+    return roundPoints.filter(d => !questionsAsked.has(`${categoryName}-${d}`));
+  }, [questionsAsked, currentRound, players.length]);
 
   const getCategoryExpert = useCallback((categoryName: string) => {
     const category = categories.find(c => c.name === categoryName);
@@ -407,19 +422,23 @@ export default function KingOfHeartsPlay() {
 
   const getFallbackQuestions = (category: string): TriviaQuestion[] => {
     // Fallback: REAL questions (not meta-descriptions) when AI fails
-    const fallbackData = [
-      { difficulty: 100, question: `what is the most famous thing associated with ${category}?`, range: `Think of the most obvious answer - we're being generous.` },
-      { difficulty: 200, question: `who is the most well-known person in the field of ${category}?`, range: `Any famous name related to ${category} works.` },
-      { difficulty: 300, question: `what year did ${category} become widely popular or recognized?`, range: `We'll accept anything within 10 years.` },
-      { difficulty: 400, question: `what is a technical term or insider phrase used in ${category}?`, range: `Only true ${category} experts would know this.` },
-    ];
+    // Generate fallback questions based on current round
+    const roundPoints = getRoundPoints(currentRound, players.length);
     
-    return fallbackData.map(({ difficulty, question, range }) => ({
+    const fallbackByPoints: Record<number, { question: string; range: string }> = {
+      100: { question: `what is the most famous thing associated with ${category}?`, range: `Think of the most obvious answer - we're being generous.` },
+      200: { question: `who is the most well-known person in the field of ${category}?`, range: `Any famous name related to ${category} works.` },
+      300: { question: `what year did ${category} become widely popular or recognized?`, range: `Only true ${category} experts would know this.` },
+      250: { question: `what is a common term or concept in ${category}?`, range: `Something you'd pick up with casual interest.` },
+      500: { question: `what is a specific fact that dedicated ${category} fans would know?`, range: `Time to prove you've been paying attention.` },
+    };
+    
+    return roundPoints.map(difficulty => ({
       originalCategory: category,
       displayCategory: category, // Fallback uses original name
-      difficulty: difficulty as 100 | 200 | 300 | 400,
-      questionText: question,
-      rangeText: range,
+      difficulty,
+      questionText: fallbackByPoints[difficulty]?.question || `What's something interesting about ${category}?`,
+      rangeText: fallbackByPoints[difficulty]?.range || `Think about what you know about ${category}.`,
       answer: {
         display: "(The expert will judge the answer)",
         acceptable: ["any reasonable answer", "expert judgment"]
@@ -811,9 +830,9 @@ export default function KingOfHeartsPlay() {
 
             {/* Point buttons with personality */}
             <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-[400px]">
-              {[100, 200, 300, 400].map((points) => {
+              {getRoundPoints(currentRound, players.length).map((points) => {
                 const available = availablePoints.includes(points);
-                const { label, subtitle } = pointDescriptions[points];
+                const { label, subtitle } = pointDescriptions[points] || { label: String(points), subtitle: "" };
                 
                 return (
                   <BrassButton

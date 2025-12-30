@@ -51,27 +51,18 @@ export default function PointSelection() {
             </p>
           )}
 
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            {[100, 200, 300, 400].map((points) => {
-              const isAvailable = availablePoints.includes(points);
-              return (
-                <button
-                  key={points}
-                  onClick={() => isAvailable && handlePointSelect(points)}
-                  disabled={!isAvailable}
-                  className={`
-                    h-[80px] rounded-lg border-2 font-heading text-[24px] font-bold
-                    transition-all duration-150 ease-out
-                    ${isAvailable
-                      ? 'bg-qtc-cream text-qtc-black border-qtc-cream hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] cursor-pointer'
-                      : 'bg-transparent text-qtc-copper border-qtc-copper opacity-50 cursor-not-allowed'
-                    }
-                  `}
-                >
-                  {points}
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            {availablePoints.map((points) => (
+              <button
+                key={points}
+                onClick={() => handlePointSelect(points)}
+                className="h-[80px] rounded-lg border-2 font-heading text-[24px] font-bold
+                  transition-all duration-150 ease-out
+                  bg-qtc-cream text-qtc-black border-qtc-cream hover:opacity-90 hover:scale-[0.98] active:scale-[0.96] cursor-pointer"
+              >
+                {points}
+              </button>
+            ))}
           </div>
 
           <GhostButton
