@@ -611,8 +611,8 @@ export default function KingOfHeartsPlay() {
   // ═══════════════════════════════════════════════════════════
   if (gamePhase === 'round-intro') {
     const roundSubtitle = currentRound === 1 
-      ? "Answer questions about YOUR expertise"
-      : "Answer questions about THEIR expertise";
+      ? "Pick a category, any category. Answer wrong and the expert might steal your points."
+      : "Now you're answering questions from everyone else's expertise. Good luck.";
     
     return (
       <SteampunkLayout variant="holiday">
@@ -959,6 +959,14 @@ export default function KingOfHeartsPlay() {
             <h1 className="font-heading text-[40px] font-bold text-qtc-brass-light leading-tight">
               {fullPrompt}
             </h1>
+            
+            {/* Steal instructions - make them say answer out loud first */}
+            <p className="mt-6 font-body text-[18px] text-qtc-cream leading-relaxed">
+              Use that big mouth and <span className="font-semibold text-qtc-brass-light">SAY your answer out loud</span> before you click.
+            </p>
+            <p className="mt-2 font-body text-[14px] text-qtc-copper italic">
+              No peeking at the answer first, {expertName}. We&apos;re watching.
+            </p>
           </div>
 
           <BrassButton
@@ -967,7 +975,7 @@ export default function KingOfHeartsPlay() {
             onClick={handleRevealAnswer}
             className="mt-12"
           >
-            What&apos;s the real answer?
+            They Answered — Reveal the Truth
           </BrassButton>
         </div>
       </SteampunkLayout>
