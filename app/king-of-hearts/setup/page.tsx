@@ -8,7 +8,8 @@ import {
   BrassInput, 
   GameCard, 
   HolidayGarland, 
-  Gear 
+  Gear,
+  GhostButton 
 } from '@/components/ui/qtc-components';
 
 interface PlayerSetupData {
