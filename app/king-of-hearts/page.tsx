@@ -303,7 +303,7 @@ export default function KingOfHeartsEntry() {
           <div className="flex items-center justify-center gap-2 mb-8">
             <Gear size="sm" speed="slow" />
             <p className="font-mono text-xs text-qtc-copper uppercase tracking-wider">
-              4-8 Players Required
+              2-8 Players Required
             </p>
             <Gear size="sm" speed="slow" className="rotate-180" />
           </div>
