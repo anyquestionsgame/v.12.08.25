@@ -182,7 +182,7 @@ export default function FinalRound() {
             One Thing You All Know
           </h1>
           
-          <GameCard variant="holiday" className="mt-8 max-w-[400px]">
+          <GameCard variant="brass" className="mt-8 max-w-[400px]">
             <p className="text-center font-heading text-[24px] font-bold text-qtc-cream">
               {displayCategory || sharedCategory}
             </p>
@@ -339,7 +339,7 @@ export default function FinalRound() {
               The Question
             </p>
             
-            <GameCard variant="holiday" className="mt-6 max-w-[500px]">
+            <GameCard variant="brass" className="mt-6 max-w-[500px]">
               <p className="font-heading text-[24px] font-normal text-qtc-cream text-center leading-relaxed">
                 {question.questionText}
               </p>
