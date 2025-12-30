@@ -331,7 +331,7 @@ function KingOfHeartsSetupContent() {
 
             <div className="mt-10 w-full">
               {/* Shared Category Input */}
-              <GameCard variant="holiday">
+              <GameCard variant="brass">
                 <label className="block font-heading text-[20px] font-bold text-qtc-brass-light mb-2 select-none text-center">
                   What&apos;s something you ALL know about?
                 </label>
