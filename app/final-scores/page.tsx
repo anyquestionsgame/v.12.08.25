@@ -137,7 +137,6 @@ function FinalScoresContent({ session: initialSession }: { session: GameSession 
                   key={player.name}
                   variant={isWinner ? "brass" : "dark"}
                   className={isWinner ? 'bg-brass-gradient text-qtc-black animate-glow' : ''}
-                  style={{ animationDelay: `${i * 50}ms` }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
