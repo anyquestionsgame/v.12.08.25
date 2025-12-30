@@ -3,9 +3,11 @@
 
 import { GameSession, loadSession, Player } from '@/app/lib/gameOrchestrator';
 
+export type SessionError = 'no_session' | 'invalid_session' | 'missing_players' | 'no_games' | 'corrupted_data';
+
 export type ValidationResult = 
   | { valid: true; session: GameSession }
-  | { valid: false; error: 'no_session' | 'invalid_session' | 'missing_players' | 'no_games' | 'corrupted_data'; message: string };
+  | { valid: false; error: SessionError; message: string };
 
 export function validateSession(): ValidationResult {
   // Check if we're in browser
@@ -102,7 +104,7 @@ export function validatePlayersExist(): { valid: boolean; players: Player[] | nu
   }
 }
 
-export function getRecoveryPath(error: ValidationResult['error']): string {
+export function getRecoveryPath(error: SessionError): string {
   switch (error) {
     case 'no_session':
     case 'invalid_session':
