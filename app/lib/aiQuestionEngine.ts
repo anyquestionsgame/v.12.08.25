@@ -115,17 +115,35 @@ const questionCache = new Map<string, TriviaQuestion[]>();
 // ═══════════════════════════════════════════════════════════
 
 export async function generateAdjacentCategoryName(
-  category: string
+  category: string,
+  howKnow: string = ''
 ): Promise<string> {
-  // Check cache first
-  if (adjacentNameCache.has(category.toLowerCase())) {
+  // Check cache first (include howKnow since it affects the name)
+  const cacheKey = `${category.toLowerCase()}-${howKnow.toLowerCase()}`;
+  if (adjacentNameCache.has(cacheKey)) {
     console.log(`[AI Engine] Adjacent name cache hit for: ${category}`);
-    return adjacentNameCache.get(category.toLowerCase())!;
+    return adjacentNameCache.get(cacheKey)!;
   }
 
-  console.log(`[AI Engine] Generating adjacent category name for: ${category}`);
+  console.log(`[AI Engine] Generating adjacent category name for: ${category}${howKnow ? ` [context: ${howKnow}]` : ''}`);
 
   try {
+    // Build context for personal projects
+    const personalProjectContext = howKnow ? `
+═══════════════════════════════════════════════════════════
+EXPERTISE CONTEXT
+═══════════════════════════════════════════════════════════
+
+The player knows about "${category}" because: "${howKnow}"
+
+CRITICAL: If howKnow suggests they CREATED this (made it, wrote it, built it, my show, my project):
+- Generate a category name for the GENERAL GENRE/TOPIC, not their specific creation
+- Example: "Slam Frank" + "I wrote this musical" → "Off-Broadway Musicals" or "Musical Theater"
+- NEVER use the specific project name in the category
+
+If they're a FAN or CONSUMER: Use the topic itself for the category name.
+` : '';
+
     const systemPrompt = `You generate fun but CLEAR category names for trivia.
 
 ═══════════════════════════════════════════════════════════
@@ -137,7 +155,7 @@ CRITICAL REQUIREMENTS
 3. NO OBSCURE REFERENCES - Don't require cultural knowledge to understand
 4. SIMPLE LANGUAGE - Use common words everyone knows
 5. 2-4 words maximum
-
+${personalProjectContext}
 ═══════════════════════════════════════════════════════════
 GOOD EXAMPLES (Clear + Fun)
 ═══════════════════════════════════════════════════════════
@@ -158,6 +176,8 @@ GOOD EXAMPLES (Clear + Fun)
 - Sports → "Sports Stats Corner"
 - Movies → "Movie Buff Trivia"
 - Trader Joe's → "Grocery Store Favorites"
+- "My screenplay" (I wrote it) → "Screenwriting Basics"
+- "Slam Frank" (I made this musical) → "Musical Theater"
 
 ═══════════════════════════════════════════════════════════
 BAD EXAMPLES (Too Obscure - NEVER DO THIS)
@@ -171,6 +191,7 @@ BAD EXAMPLES (Too Obscure - NEVER DO THIS)
 ❌ "3AM Zoomies Psychology" - Too quirky
 ❌ "Ghost Movie References" - Obscure film reference
 ❌ "Aux Cord Pressure Moments" - Too abstract
+❌ Using a personal project name that no one else knows
 
 ═══════════════════════════════════════════════════════════
 THE TEST
@@ -183,7 +204,7 @@ If YES → good!
 The category name should make players think "oh yeah, that makes sense" NOT "what does that mean?"
 Keep it simple. Keep it clear. Make it slightly fun.`;
 
-    const userPrompt = `Generate ONE adjacent category name for: "${category}"
+    const userPrompt = `Generate ONE adjacent category name for: "${category}"${howKnow ? `\nContext: They know this because "${howKnow}"` : ''}
 Return ONLY the category name, nothing else. No quotes, no explanation.`;
 
     const response = await getAnthropicClient().messages.create({
@@ -202,8 +223,8 @@ Return ONLY the category name, nothing else. No quotes, no explanation.`;
     // Clean up any quotes that might have been included
     const cleanName = adjacentName.replace(/^["']|["']$/g, '').trim();
     
-    // Cache the result
-    adjacentNameCache.set(category.toLowerCase(), cleanName);
+    // Cache the result (with howKnow context)
+    adjacentNameCache.set(cacheKey, cleanName);
     console.log(`[AI Engine] Adjacent name for "${category}": "${cleanName}"`);
     
     return cleanName;
@@ -224,27 +245,46 @@ export async function generateQuestions(
   playerName: string,
   expertName: string,
   round: 1 | 2 | 3 = 1,
-  playerCount: number = 4
+  playerCount: number = 4,
+  howKnow: string = ''
 ): Promise<TriviaQuestion[]> {
   // Get round-specific configuration
   const config = getRoundConfig(playerCount, round);
   
-  // Check cache first
-  const cacheKey = `${category}-${round}-${playerCount}`;
+  // Check cache first (include howKnow in cache key since it affects generation)
+  const cacheKey = `${category}-${round}-${playerCount}-${howKnow}`;
   if (questionCache.has(cacheKey)) {
     console.log(`[AI Engine] Cache hit for: ${category} (Round ${round})`);
     return questionCache.get(cacheKey)!;
   }
 
-  console.log(`[AI Engine] Generating ${config.questionCount} questions for category: ${category} (Round ${round})`);
+  console.log(`[AI Engine] Generating ${config.questionCount} questions for category: ${category} (Round ${round})${howKnow ? ` [context: ${howKnow}]` : ''}`);
 
-  // Generate the fun adjacent category name first
-  const displayCategory = await generateAdjacentCategoryName(category);
+  // Generate the fun adjacent category name first (pass howKnow for context)
+  const displayCategory = await generateAdjacentCategoryName(category, howKnow);
 
   try {
     // ═══════════════════════════════════════════════════════════
     // CLAUDE API - Round-specific prompts
     // ═══════════════════════════════════════════════════════════
+
+    // Build disambiguation context based on howKnow
+    const disambiguationContext = howKnow ? `
+EXPERTISE CONTEXT INTERPRETATION:
+The player said they know about "${category}" because: "${howKnow}"
+
+CRITICAL: Interpret this context correctly:
+- If howKnow includes "made it", "created it", "built it", "wrote it", "my show", "my musical", "my project": 
+  This is a PERSONAL PROJECT. Generate questions about the GENERAL TOPIC/GENRE, NOT their specific creation.
+  Example: expertise="Slam Frank", howKnow="I wrote this musical" → Ask about off-Broadway musicals, theater history, musical composition in general. NEVER search for or reference "Slam Frank".
+  
+- If howKnow includes "watch", "fan of", "obsessed with", "love", "follow":
+  Generate questions about the subject matter itself - the shows, the facts, the details.
+  
+- If howKnow includes "work in", "professional", "job", "career", "industry":
+  Generate questions about industry/professional knowledge, tools, practices.
+
+NEVER search for or reference the specific project name if it's something they created.` : '';
 
     const systemPrompt = `You are generating trivia questions for ANY QUESTIONS, a party game.
 
@@ -260,7 +300,7 @@ Every question MUST:
 3. Be something you could Google to verify
 
 Never generate questions that ask "what is X known for" or "what is associated with X" - those are NOT trivia questions.
-
+${disambiguationContext}
 For the "rangeText" field: This is the ANY QUESTIONS personality voice. Be playful, teasing, and fun.
 Examples: "Shake it off, this isn't your thing anyway.", "Time to prove you're not just pretentious.", "Only true fans track this."`;
 
@@ -362,8 +402,8 @@ Now generate ${config.questionCount} question${config.questionCount > 1 ? 's' : 
   } catch (error) {
     console.error('[AI Engine] Generation failed:', error);
     
-    // Return fallback mock questions
-    return await getMockQuestions(category, playerName, round, playerCount);
+    // Return fallback mock questions (pass howKnow for context)
+    return await getMockQuestions(category, playerName, round, playerCount, howKnow);
   }
 }
 
@@ -376,12 +416,13 @@ async function getMockQuestions(
   category: string, 
   playerName: string,
   round: 1 | 2 | 3 = 1,
-  playerCount: number = 4
+  playerCount: number = 4,
+  howKnow: string = ''
 ): Promise<TriviaQuestion[]> {
   console.log(`[AI Engine] Using fallback questions for: ${category} (Round ${round})`);
   
-  // Still try to get a fun display name even for fallback
-  const displayCategory = await generateAdjacentCategoryName(category).catch(() => category);
+  // Still try to get a fun display name even for fallback (pass howKnow for context)
+  const displayCategory = await generateAdjacentCategoryName(category, howKnow).catch(() => category);
   
   const config = getRoundConfig(playerCount, round);
   

@@ -15,7 +15,9 @@ import {
 interface PlayerSetupData {
   name: string;
   selfCategory: string;
+  selfHowKnow: string;      // HOW they know their expertise (e.g., "I made it", "I watch too much of it")
   peerCategory: string;
+  peerHowKnow: string;      // HOW the peer knows (assigned by someone else)
   peerCategoryFrom: string;
 }
 
@@ -55,7 +57,9 @@ function KingOfHeartsSetupContent() {
   
   // Form state for current player
   const [selfCategory, setSelfCategory] = useState('');
+  const [selfHowKnow, setSelfHowKnow] = useState('');
   const [peerCategory, setPeerCategory] = useState('');
+  const [peerHowKnow, setPeerHowKnow] = useState('');
   
   // Track which players have been assigned peer categories
   const [assignedPeerPlayers, setAssignedPeerPlayers] = useState<string[]>([]);
@@ -94,7 +98,9 @@ function KingOfHeartsSetupContent() {
       const initialPlayers: PlayerSetupData[] = playerNames.map(name => ({
         name,
         selfCategory: '',
+        selfHowKnow: '',
         peerCategory: '',
+        peerHowKnow: '',
         peerCategoryFrom: '',
       }));
       setPlayers(initialPlayers);
@@ -136,14 +142,17 @@ function KingOfHeartsSetupContent() {
     const playerCount = finalPlayers.length;
     
     // Build categories for Round 1 (selfCategory) and Round 2 (peerCategory)
+    // Include howKnow for disambiguation
     const round1Categories = finalPlayers.map(p => ({
       name: p.selfCategory,
+      howKnow: p.selfHowKnow,
       expert: p.name,
       round: 1,
     }));
     
     const round2Categories = finalPlayers.map(p => ({
       name: p.peerCategory,
+      howKnow: p.peerHowKnow,
       expert: p.name,
       round: 2,
     }));
@@ -151,6 +160,7 @@ function KingOfHeartsSetupContent() {
     // Add shared category for Final Round (no specific expert - all players)
     const finalRoundCategory = {
       name: sharedCategory,
+      howKnow: '', // No disambiguation needed for shared category
       expert: 'everyone', // Special marker for final round
       round: 3,
     };
@@ -559,7 +569,8 @@ function KingOfHeartsSetupContent() {
 
   const currentPlayer = players[currentPlayerIndex];
   const isLastPlayer = currentPlayerIndex === players.length - 1;
-  const isFormComplete = selfCategory.trim().length > 0 && peerCategory.trim().length > 0;
+  // Form is complete when both categories AND how they know are filled
+  const isFormComplete = selfCategory.trim().length > 0 && selfHowKnow.trim().length > 0 && peerCategory.trim().length > 0;
 
   const getPositionText = () => {
     if (currentPlayerIndex === 0) return "you're up first";
@@ -570,19 +581,21 @@ function KingOfHeartsSetupContent() {
   const handleNextPlayer = async () => {
     if (!isFormComplete || !currentPlayer || !peerTargetPlayer) return;
 
-    // Update current player's selfCategory
+    // Update current player's selfCategory and selfHowKnow
     const updatedPlayers = [...players];
     updatedPlayers[currentPlayerIndex] = {
       ...updatedPlayers[currentPlayerIndex],
       selfCategory: selfCategory.trim(),
+      selfHowKnow: selfHowKnow.trim(),
     };
 
-    // Find the target player and update their peerCategory
+    // Find the target player and update their peerCategory and peerHowKnow
     const targetIndex = updatedPlayers.findIndex(p => p.name === peerTargetPlayer);
     if (targetIndex !== -1) {
       updatedPlayers[targetIndex] = {
         ...updatedPlayers[targetIndex],
         peerCategory: peerCategory.trim(),
+        peerHowKnow: peerHowKnow.trim(),
         peerCategoryFrom: currentPlayer.name,
       };
     }
@@ -597,7 +610,9 @@ function KingOfHeartsSetupContent() {
       // Move to next player
       setCurrentPlayerIndex(prev => prev + 1);
       setSelfCategory('');
+      setSelfHowKnow('');
       setPeerCategory('');
+      setPeerHowKnow('');
       setPeerTargetPlayer('');
     }
   };
@@ -644,17 +659,31 @@ function KingOfHeartsSetupContent() {
             {/* Question 1: Self Category */}
             <GameCard variant="brass">
               <label className="block font-heading text-[18px] font-bold text-qtc-brass-light mb-2 select-none">
-                What&apos;s something you know too much about?
+                What do you know too much about?
               </label>
-              <p className="mb-4 font-body text-[14px] text-qtc-copper">
-                You can be as specific as you want
+              <p className="mb-3 font-body text-[14px] text-qtc-copper">
+                Be as weirdly specific as you want
               </p>
               <BrassInput
                 value={selfCategory}
                 onChange={(e) => setSelfCategory(e.target.value)}
-                placeholder="Your weird expertise..."
+                placeholder="e.g., 'Bachelor Nation drama' or 'my off-Broadway musical'"
                 autoFocus
               />
+              
+              {/* How do you know - appears after entering category */}
+              {selfCategory.trim().length > 0 && (
+                <div className="mt-4">
+                  <label className="block font-body text-[14px] text-qtc-brass-light mb-2 select-none">
+                    And how do you know so much about that?
+                  </label>
+                  <BrassInput
+                    value={selfHowKnow}
+                    onChange={(e) => setSelfHowKnow(e.target.value)}
+                    placeholder="e.g., 'I made it' or 'I watch too much of it'"
+                  />
+                </div>
+              )}
             </GameCard>
 
             {/* Question 2: Peer Category */}
@@ -663,7 +692,7 @@ function KingOfHeartsSetupContent() {
                 <label className="block font-heading text-[18px] font-bold text-qtc-copper-light mb-2 select-none">
                   What&apos;s something <span className="text-qtc-holiday-red">{peerTargetPlayer}</span> won&apos;t shut up about?
                 </label>
-                <p className="mb-4 font-body text-[14px] text-qtc-copper">
+                <p className="mb-3 font-body text-[14px] text-qtc-copper">
                   What does {peerTargetPlayer} always bring up?
                 </p>
                 <BrassInput
@@ -671,6 +700,20 @@ function KingOfHeartsSetupContent() {
                   onChange={(e) => setPeerCategory(e.target.value)}
                   placeholder={`${peerTargetPlayer}'s obsession...`}
                 />
+                
+                {/* How do they know - appears after entering category */}
+                {peerCategory.trim().length > 0 && (
+                  <div className="mt-4">
+                    <label className="block font-body text-[14px] text-qtc-copper-light mb-2 select-none">
+                      How does {peerTargetPlayer} know so much about it?
+                    </label>
+                    <BrassInput
+                      value={peerHowKnow}
+                      onChange={(e) => setPeerHowKnow(e.target.value)}
+                      placeholder="e.g., 'they're obsessed' or 'it's their job'"
+                    />
+                  </div>
+                )}
               </GameCard>
             )}
           </div>

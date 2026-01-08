@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 // ═══════════════════════════════════════════════════════════
 
 async function handleSingleGeneration(body: any) {
-  const { category, playerName, expertName, round = 1, playerCount = 4 } = body;
+  const { category, playerName, expertName, round = 1, playerCount = 4, howKnow = '' } = body;
 
   // Validate required fields
   if (!category || typeof category !== 'string') {
@@ -77,7 +77,7 @@ async function handleSingleGeneration(body: any) {
   
   console.log(`[API] Generating questions for category: ${category} (Round ${validRound})`);
 
-  const questions = await generateQuestions(category, playerName, expertName, validRound as 1 | 2 | 3, playerCount);
+  const questions = await generateQuestions(category, playerName, expertName, validRound as 1 | 2 | 3, playerCount, howKnow);
 
   return NextResponse.json({
     success: true,
@@ -123,20 +123,21 @@ async function handleBulkGeneration(body: any) {
   for (let i = 0; i < categories.length; i += batchSize) {
     const batch = categories.slice(i, i + batchSize);
     
-    const batchPromises = batch.map(async (cat: { name: string; expert: string; round?: number }) => {
+    const batchPromises = batch.map(async (cat: { name: string; howKnow?: string; expert: string; round?: number }) => {
       try {
         // Determine round from category config, default to 1
         const round = (cat.round === 1 || cat.round === 2 || cat.round === 3) ? cat.round : 1;
         
         // Use first player name for the prompts (they all see the same questions)
-        const questions = await generateQuestions(cat.name, players[0], cat.expert, round as 1 | 2 | 3, numPlayers);
+        // Pass howKnow for expertise disambiguation
+        const questions = await generateQuestions(cat.name, players[0], cat.expert, round as 1 | 2 | 3, numPlayers, cat.howKnow);
         return { category: cat.name, questions, success: true, round };
       } catch (error) {
         console.error(`[API] Failed to generate for ${cat.name}:`, error);
         const round = (cat.round === 1 || cat.round === 2 || cat.round === 3) ? cat.round : 1;
         return { 
           category: cat.name, 
-          questions: getFallbackQuestions(cat.name, players[0], round as 1 | 2 | 3, numPlayers), 
+          questions: getFallbackQuestions(cat.name, players[0], round as 1 | 2 | 3, numPlayers, cat.howKnow), 
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
           round
@@ -175,7 +176,7 @@ async function handleBulkGeneration(body: any) {
 }
 
 // Fallback questions if AI fails - these are REAL questions, not meta-descriptions
-function getFallbackQuestions(category: string, playerName: string, round: 1 | 2 | 3 = 1, playerCount: number = 4): TriviaQuestion[] {
+function getFallbackQuestions(category: string, playerName: string, round: 1 | 2 | 3 = 1, playerCount: number = 4, howKnow?: string): TriviaQuestion[] {
   const config = getRoundConfig(playerCount, round);
   
   return config.difficulties.map(difficulty => ({
