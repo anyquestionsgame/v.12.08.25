@@ -235,14 +235,20 @@ function KingOfHeartsSetupContent() {
     const testPlayer: PlayerSetupData = {
       name: 'Test Player',
       selfCategory: testCategory.trim(),
+      selfHowKnow: 'I know too much about it',
       peerCategory: testCategory.trim(), // Same category for both rounds
+      peerHowKnow: 'They talk about it constantly',
       peerCategoryFrom: 'Test Player',
     };
     
     const testPlayers = [testPlayer];
     
-    // Only need one category for testing
-    const categories = [{ name: testCategory.trim(), expert: 'Test Player' }];
+    // Only need one category for testing (include howKnow for disambiguation)
+    const categories = [{ 
+      name: testCategory.trim(), 
+      howKnow: 'I know too much about it',
+      expert: 'Test Player' 
+    }];
     
     console.log(`[Quick Test] Generating questions for: ${testCategory}`);
     
